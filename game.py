@@ -47,7 +47,7 @@ for color in range(2):
 
         pieces.append(pawn)
 
-#creates both sets of knights
+#creates both sets of knights, both sets of bishops, and both sets of rooks
 for color in range(2):
     for col in range(2):
         white = bool(color) #bool(0) == False; bool(1) == True
@@ -61,44 +61,20 @@ for color in range(2):
             ((col+1)+(col*4), row), #location; each value goes from 0-7
             white #is it white?
         )
-
-        pieces.append(knight)
-
-#creates both sets of bishops
-for color in range(2):
-    for col in range(2):
-        white = bool(color) #bool(0) == False; bool(1) == True
-
-        #find which row to put our pawn, based on color
-        row = 0
-        if white: 
-            row = 7
-
         bishop = Bishop( 
             ((col+2)+(col*2), row), #location; each value goes from 0-7
             white #is it white?
         )
-
-        pieces.append(bishop)
-
-#creates both sets of rooks
-for color in range(2):
-    for col in range(2):
-        white = bool(color) #bool(0) == False; bool(1) == True
-
-        #find which row to put our pawn, based on color
-        row = 0
-        if white: 
-            row = 7
-
         rook = Rook( 
             ((col)+(col*6), row), #location; each value goes from 0-7
             white #is it white?
         )
 
+        pieces.append(knight)
+        pieces.append(bishop)
         pieces.append(rook)
 
-#creates both kings
+#creates both kings and both queens
 for color in range(2):
     white = bool(color) #bool(0) == False; bool(1) == True
 
@@ -111,23 +87,12 @@ for color in range(2):
         (4, row), #location; each value goes from 0-7
         white #is it white?
     )
-
-    pieces.append(king)
-
-#creates both queens
-for color in range(2):
-    white = bool(color) #bool(0) == False; bool(1) == True
-
-    #find which row to put our pawn, based on color
-    row = 0
-    if white: 
-        row = 7
-
     queen = Queen( 
         (3, row), #location; each value goes from 0-7
         white #is it white?
     )
 
+    pieces.append(king)
     pieces.append(queen)
 
 while playing: #no need to do playing==True; playing literally just is true
