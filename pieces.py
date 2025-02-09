@@ -14,3 +14,23 @@ class Piece:
 class Pawn(Piece):
     def __init__(self, location, white = False):
         Piece.__init__(self, location, 'pawn', white)
+
+class Knight(Piece):
+    def __init__(self, location, white = False):
+        Piece.__init__(self, location, 'knight', white)
+
+class Bishop(Piece):
+    def __init__(self, location, white = False):
+        Piece.__init__(self, location, 'bishop', white)
+
+class Rook(Piece):
+    def __init__(self, location, white = False):
+        Piece.__init__(self, location, 'rook', white)
+
+class King(Piece):
+    def __init__(self, location, white = False):
+        Piece.__init__(self, location, 'king', white)
+
+class Queen(Piece):
+    def __init__(self, location, white = False):
+        Piece.__init__(self, location, 'queen', white)
