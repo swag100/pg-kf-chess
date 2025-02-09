@@ -30,26 +30,51 @@ playing=True
 #list that contains every piece object
 pieces=[]
 
-#create both rows of pawns with loops
-for color in range(2):
-    for col in range(8):
-        white = bool(color) #bool(0) == False; bool(1) == True
+def board_setup():
+    #create both rows of pawns with loops
+    for color in range(2):
+        for col in range(8):
+            white = bool(color) #bool(0) == False; bool(1) == True
 
-        #find which row to put our pawn, based on color
-        row = 1
-        if white: 
-            row = 6
+            #find which row to put our pawn, based on color
+            row = 1
+            if white: 
+                row = 6
 
-        pawn = Pawn( 
-            (col, row), #location; each value goes from 0-7
-            white #is it white?
-        )
+            pawn = Pawn( 
+                (col, row), #location; each value goes from 0-7
+                white #is it white?
+            )
 
-        pieces.append(pawn)
+            pieces.append(pawn)
+    #creates both sets of knights, both sets of bishops, and both sets of rooks
+    for color in range(2):
+        for col in range(2):
+            white = bool(color) #bool(0) == False; bool(1) == True
 
-#creates both sets of knights, both sets of bishops, and both sets of rooks
-for color in range(2):
-    for col in range(2):
+            #find which row to put our pawn, based on color
+            row = 0
+            if white: 
+                row = 7
+
+            knight = Knight( 
+                ((col+1)+(col*4), row), #location; each value goes from 0-7
+                white #is it white?
+            )
+            bishop = Bishop( 
+                ((col+2)+(col*2), row), #location; each value goes from 0-7
+                white #is it white?
+            )
+            rook = Rook( 
+                ((col)+(col*6), row), #location; each value goes from 0-7
+                white #is it white?
+            )
+
+            pieces.append(knight)
+            pieces.append(bishop)
+            pieces.append(rook)
+    #creates both kings and both queens
+    for color in range(2):
         white = bool(color) #bool(0) == False; bool(1) == True
 
         #find which row to put our pawn, based on color
@@ -57,43 +82,19 @@ for color in range(2):
         if white: 
             row = 7
 
-        knight = Knight( 
-            ((col+1)+(col*4), row), #location; each value goes from 0-7
+        king = King( 
+            (4, row), #location; each value goes from 0-7
             white #is it white?
         )
-        bishop = Bishop( 
-            ((col+2)+(col*2), row), #location; each value goes from 0-7
-            white #is it white?
-        )
-        rook = Rook( 
-            ((col)+(col*6), row), #location; each value goes from 0-7
+        queen = Queen( 
+            (3, row), #location; each value goes from 0-7
             white #is it white?
         )
 
-        pieces.append(knight)
-        pieces.append(bishop)
-        pieces.append(rook)
+        pieces.append(king)
+        pieces.append(queen)
 
-#creates both kings and both queens
-for color in range(2):
-    white = bool(color) #bool(0) == False; bool(1) == True
-
-    #find which row to put our pawn, based on color
-    row = 0
-    if white: 
-        row = 7
-
-    king = King( 
-        (4, row), #location; each value goes from 0-7
-        white #is it white?
-    )
-    queen = Queen( 
-        (3, row), #location; each value goes from 0-7
-        white #is it white?
-    )
-
-    pieces.append(king)
-    pieces.append(queen)
+board_setup()
 
 while playing: #no need to do playing==True; playing literally just is true
     for event in pygame.event.get():
@@ -107,12 +108,6 @@ while playing: #no need to do playing==True; playing literally just is true
         for col in range(8):
             pygame.draw.rect(screen, colors[(col+row)%2], pygame.rect.Rect(48*col, 48*row, 48, 48))
 
-    """
-    count=0
-    for key in parser.sprites.keys():
-        screen.blit(parser.sprites[key], ((48*count)+3, (48*count)+3))
-        count+=1
-    """
     #draw pieces based off of their own positions
     for piece in pieces:
         #no need for a get method when you can access the variables directly like this
