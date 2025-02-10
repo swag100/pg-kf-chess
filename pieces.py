@@ -16,6 +16,9 @@ class Piece:
         self._places_to_move=[]
         self._places_to_kill=[]
 
+        #count of moves. really just for the pawn
+        self._moves=0
+
     def find_tiles_where_i_can_move(self, pieces):
         move_places=[]
 
@@ -84,7 +87,7 @@ class Pawn(Piece):
             (-1, -1),
             (1, -1)
         ]
-
+        
 class Knight(Piece):
     def __init__(self, location, white = False):
         Piece.__init__(self, location, 'knight', white)
