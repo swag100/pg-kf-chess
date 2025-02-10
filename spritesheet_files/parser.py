@@ -1,3 +1,5 @@
+#PARSER.PY
+
 import pygame
 
 #loads spritesheet image for sparsing

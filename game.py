@@ -1,8 +1,7 @@
+#GAME.PY
+
 import sys
 import pygame
-
-#moved to pieces.py; not used in this file anymore
-#import spritesheet_files.parser as parser 
 
 #import all piece classes
 from pieces import *
@@ -35,7 +34,7 @@ pieces=[]
 selection=None
 
 #i don't know why but it works starting as false
-is_white_turn=False
+is_white_turn=True
 
 def board_setup():
     #create both rows of pawns with loops
@@ -101,6 +100,27 @@ def board_setup():
         pieces.append(king)
         pieces.append(queen)
 
+def get_piece_at(pieces, location):
+    for piece in pieces:
+        if piece._location == location:
+            return piece
+
+def move_piece(cur_selection, mouse_loco):
+    for place in cur_selection.find_tiles_where_i_can_move(pieces):
+        if place == mouse_loco:
+            cur_selection._location=place
+    
+            if isinstance(cur_selection, Pawn):
+                cur_selection._places_to_move=[(0, -1)]
+
+    for place in cur_selection.find_tiles_where_i_can_kill(pieces):
+        if place == mouse_loco:
+            pieces.remove(get_piece_at(pieces, place))
+            cur_selection._location=place
+
+    
+    return cur_selection
+
 board_setup()
 
 while playing: #no need to do playing==True; playing literally just is true
@@ -121,23 +141,17 @@ while playing: #no need to do playing==True; playing literally just is true
                 #// is INTEGER division
                 mouse_location=(mouse_position[0] // 48, mouse_position[1] // 48)
 
-                #is there a piece lying on this tile coordinate?
-                for piece in pieces:
-                    if piece._location == mouse_location:
-                        #if we try to select a piece that isn't our color, remove our selection
-                        if is_white_turn == piece._white:
-                            selection=None
+                if selection:
+                    move_piece(selection, mouse_location)
 
-                            #break out of the loop so we dont loop through it anymore since we dont need to
-                            break 
+                old_selection=selection
 
-                        #if there was already a selection right here, we're trying to deselect the piece
-                        if selection == piece:
-                            selection=None
-                        else:
-                            selection=piece
+                selection=get_piece_at(pieces, mouse_location)
 
-                #print(mouse_location)
+                if old_selection == selection:
+                    selection=None
+                if selection and is_white_turn != selection._white:
+                    selection=None
 
         #for debugging, just making sure is_white_turn works correctly
         #this will switch the turn to the other player
@@ -164,10 +178,14 @@ while playing: #no need to do playing==True; playing literally just is true
         piece.draw(screen)
 
         if piece == selection: #make this a variable of the piece class, right now only pawn has it.
-            valid_places=piece.find_tiles_where_i_can_move(pieces)
-            for place in valid_places:
+            valid_move_places=piece.find_tiles_where_i_can_move(pieces)
+            for place in valid_move_places:
                 pygame.draw.circle(screen, (0, 0, 0), ((place[0] * 48) + 24, (place[1] * 48) + 24), 6)
-
+            
+            valid_kill_places=piece.find_tiles_where_i_can_kill(pieces)
+            for place in valid_kill_places:
+                pygame.draw.circle(screen, (0, 0, 0), ((place[0] * 48) + 24, (place[1] * 48) + 24), 24, 4)
+                
     #updates the screen
     pygame.display.update()
 

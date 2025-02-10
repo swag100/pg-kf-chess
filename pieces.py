@@ -1,3 +1,4 @@
+#PIECES.PY
 import pygame
 
 #get access to the sprites
@@ -13,31 +14,56 @@ class Piece:
 
         #list of offsets applied to the piece's current location
         self._places_to_move=[]
+        self._places_to_kill=[]
 
     def find_tiles_where_i_can_move(self, pieces):
-        valid_places=[]
+        move_places=[]
 
         #add every possible move into valid_places
         for offset in self._places_to_move:
-            valid_places.append(
+            move_places.append(
                 (
                     self._location[0] + offset[0],
-                    self._location[1] + offset[1]
+                    self._location[1] + (offset[1])*((self._white*2)-1)
                 )
             )
 
-        #remove any places that are taken up by a piece
+        #remove any places that are taken up by a piece, along with everything past it
+        piece_found=False
         for piece in pieces:
-            for place in valid_places:
+            for place in move_places:
+                if piece_found:
+                    move_places.remove(place)
+                    break
+
                 if piece._location == place:
-                    valid_places.remove(place)
-        
-        return valid_places
+                    piece_found=True
+                
+        return move_places
+
+    def find_tiles_where_i_can_kill(self, pieces):
+        invalid_places=[]
+
+        #add every possible move into valid_places
+        for offset in self._places_to_kill:
+            invalid_places.append(
+                (
+                    self._location[0] + offset[0],
+                    self._location[1] + (offset[1])*((self._white*2)-1)
+                )
+            )
+
+        kill_places=[]
+
+        #remove any places that do not contain a piece
+        for piece in pieces:
+            if piece._location in invalid_places:
+                if piece._white != self._white:
+                    kill_places.append(piece._location)
+                
+        return kill_places
 
     def draw(self, screen):
-        #no need for a get method when you can access the variables directly like this
-        #you can create a get method if you prefer, whatever makes more sense to you
-
         piece_position = [
             (self._location[0] * 48) + 3,
             (self._location[1] * 48) + 3,
@@ -54,9 +80,27 @@ class Pawn(Piece):
             (0, -2)
         ]
 
+        self._places_to_kill=[
+            (-1, -1),
+            (1, -1)
+        ]
+
 class Knight(Piece):
     def __init__(self, location, white = False):
         Piece.__init__(self, location, 'knight', white)
+
+        self._places_to_move=[
+            (-2, -1),
+            (-2, 1),
+            (-1, 2),
+            (-1, -2),
+            (1, -2),
+            (1, 2),
+            (2, -1),
+            (2, 1)
+        ]
+
+        self._places_to_kill=self._places_to_move
 
 class Bishop(Piece):
     def __init__(self, location, white = False):
@@ -69,6 +113,8 @@ class Rook(Piece):
 class King(Piece):
     def __init__(self, location, white = False):
         Piece.__init__(self, location, 'king', white)
+
+        self._places_to_kill=self._places_to_move
 
 class Queen(Piece):
     def __init__(self, location, white = False):
