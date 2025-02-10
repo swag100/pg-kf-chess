@@ -1,3 +1,4 @@
+import sys
 import pygame
 
 #moved to pieces.py; not used in this file anymore
@@ -29,6 +30,12 @@ playing=True
 
 #list that contains every piece object
 pieces=[]
+
+#variable that keeps track of the players selection, if any. will either be a piece object or None.
+selection=None
+
+#i don't know why but it works starting as false
+is_white_turn=False
 
 def board_setup():
     #create both rows of pawns with loops
@@ -101,12 +108,55 @@ while playing: #no need to do playing==True; playing literally just is true
 
         #ends the game on closure
         if event.type == pygame.QUIT:
-            exit()
+            #this is going to be done whether you like it or not boy.
+            pygame.quit()
+            sys.exit()
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == pygame.BUTTON_LEFT: #left click
+                mouse_position=pygame.mouse.get_pos()
+
+                #the TILE coordinates that you're clicking on.
+                #tricky to explain, just ask me about it if you don't understand
+                #// is INTEGER division
+                mouse_location=(mouse_position[0] // 48, mouse_position[1] // 48)
+
+                #is there a piece lying on this tile coordinate?
+                for piece in pieces:
+                    if piece._location == mouse_location:
+                        #if we try to select a piece that isn't our color, remove our selection
+                        if is_white_turn == piece._white:
+                            selection=None
+
+                            #break out of the loop so we dont loop through it anymore since we dont need to
+                            break 
+
+                        #if there was already a selection right here, we're trying to deselect the piece
+                        if selection == piece:
+                            selection=None
+                        else:
+                            selection=piece
+
+                #print(mouse_location)
+
+        #for debugging, just making sure is_white_turn works correctly
+        #this will switch the turn to the other player
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                is_white_turn = not is_white_turn
     
     #draw checkered board
     for row in range(8):
         for col in range(8):
             pygame.draw.rect(screen, colors[(col+row)%2], pygame.rect.Rect(48*col, 48*row, 48, 48))
+        
+    #draw selection tile
+    if selection:
+        selection_surface=pygame.surface.Surface((48, 48))
+        selection_surface.fill((0,255,0))
+        selection_surface.set_alpha(128) #make it half transparent for good looks, haha!!
+
+        screen.blit(selection_surface, (selection._location[0] * 48, selection._location[1] * 48))
 
     #draw pieces based off of their own positions
     for piece in pieces:
@@ -119,7 +169,6 @@ while playing: #no need to do playing==True; playing literally just is true
         ]
 
         screen.blit(piece._sprite, piece_position)
-        
 
     #updates the screen
     pygame.display.update()
