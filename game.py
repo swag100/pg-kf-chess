@@ -160,15 +160,13 @@ while playing: #no need to do playing==True; playing literally just is true
 
     #draw pieces based off of their own positions
     for piece in pieces:
-        #no need for a get method when you can access the variables directly like this
-        #you can create a get method if you prefer, whatever makes more sense to you
+        #logic moved to pieces
+        piece.draw(screen)
 
-        piece_position = [
-            (piece._location[0] * 48) + 3,
-            (piece._location[1] * 48) + 3,
-        ]
-
-        screen.blit(piece._sprite, piece_position)
+        if piece == selection: #make this a variable of the piece class, right now only pawn has it.
+            valid_places=piece.find_tiles_where_i_can_move(pieces)
+            for place in valid_places:
+                pygame.draw.circle(screen, (0, 0, 0), ((place[0] * 48) + 24, (place[1] * 48) + 24), 6)
 
     #updates the screen
     pygame.display.update()
