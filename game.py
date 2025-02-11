@@ -100,36 +100,6 @@ def board_setup():
         pieces.append(king)
         pieces.append(queen)
 
-def get_piece_at(pieces, location):
-    for piece in pieces:
-        if piece._location == location:
-            return piece
-
-def move_piece(cur_selection, mouse_loco):
-    piece_moved=False
-    for place in cur_selection.find_tiles_where_i_can_move(pieces):
-        if place == mouse_loco:
-            cur_selection._location=place
-            piece_moved=True
-
-    for place in cur_selection.find_tiles_where_i_can_kill(pieces):
-        if place == mouse_loco:
-            pieces.remove(get_piece_at(pieces, place))
-            cur_selection._location=place
-            piece_moved=True
-
-    if piece_moved:
-        if isinstance(cur_selection, Pawn):
-            cur_selection._places_to_move=[(0, -1)]
-
-            y=cur_selection._location[1]
-
-            if y > 6 or y < 1:
-                pieces.append(Queen(cur_selection._location, cur_selection._white))
-                pieces.remove(cur_selection)
-    
-    return cur_selection
-
 board_setup()
 
 while playing: #no need to do playing==True; playing literally just is true
@@ -151,22 +121,19 @@ while playing: #no need to do playing==True; playing literally just is true
                 mouse_location=(mouse_position[0] // 48, mouse_position[1] // 48)
 
                 if selection:
-                    move_piece(selection, mouse_location)
+                    piece_moved=selection.move_to(pieces, mouse_location)
+
+                    if piece_moved:
+                        is_white_turn = not is_white_turn
 
                 old_selection=selection
 
-                selection=get_piece_at(pieces, mouse_location)
+                selection=utils.get_piece_at(pieces, mouse_location)
 
                 if old_selection == selection:
                     selection=None
                 if selection and is_white_turn != selection._white:
                     selection=None
-
-        #for debugging, just making sure is_white_turn works correctly
-        #this will switch the turn to the other player
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                is_white_turn = not is_white_turn
     
     #draw checkered board
     for row in range(8):
