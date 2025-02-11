@@ -27,11 +27,11 @@ class Piece:
 
         for place in move_tiles + kill_tiles:
             if place == new_location:
-                self._location=place
-                piece_moved=True
-
                 if place in kill_tiles:
                     pieces.remove(utils.get_piece_at(pieces, place))
+
+                self._location=place
+                piece_moved=True
         
         return piece_moved
 
