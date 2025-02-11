@@ -23,86 +23,40 @@ class Piece:
     def move_to(self, pieces, new_location):
         piece_moved=False
 
-        for place in self.find_tiles_where_i_can_move(pieces):
+        move_tiles,kill_tiles=self.find_tiles_where_i_can_move(pieces)
+
+        for place in move_tiles + kill_tiles:
             if place == new_location:
                 self._location=place
                 piece_moved=True
 
-        for place in self.find_tiles_where_i_can_kill(pieces):
-            if place == new_location:
-                pieces.remove(utils.get_piece_at(pieces, place))
-                self._location=place
-                piece_moved=True
+                if place in kill_tiles:
+                    pieces.remove(utils.get_piece_at(pieces, place))
         
         return piece_moved
 
     def find_tiles_where_i_can_move(self, pieces):
         move_places=[]
-
-        #add every possible move into valid_places
-        if isinstance(self._places_to_move, list):
-            for offset in self._places_to_move:
-                new_place=(
-                    self._location[0] + offset[0],
-                    self._location[1] + (offset[1])*((self._white*2)-1)
-                )
-
-                piece_here=False
-                for piece in pieces:
-                    if piece._location == new_place:
-                        piece_here=True
-                
-                if not piece_here:
-                    move_places.append(new_place)
-        
-        else:
-            for offset, length in self._places_to_move.items():
-                for i in range(length):
-                    new_place=(
-                        self._location[0] + offset[0] * (i + 1),
-                        self._location[1] + (offset[1]*((self._white*2)-1) * (i + 1))
-                    )
-
-                    piece_here=False
-                    for piece in pieces:
-                        if piece._location == new_place:
-                            piece_here=True
-                    
-                    if not piece_here:
-                        move_places.append(new_place)
-                
-        return move_places
-
-    def find_tiles_where_i_can_kill(self, pieces):
-        invalid_places=[]
-
-        #add every possible move into valid_places
-        if isinstance(self._places_to_kill, list):
-            for offset in self._places_to_kill:
-                invalid_places.append(
-                    (
-                        self._location[0] + offset[0],
-                        self._location[1] + (offset[1])*((self._white*2)-1)
-                    )
-                )
-        else:
-            for offset, length in self._places_to_move.items():
-                for i in range(length):
-                    new_place=(
-                        self._location[0] + offset[0] * (i + 1),
-                        self._location[1] + (offset[1]*((self._white*2)-1) * (i + 1))
-                    )
-                    invalid_places.append(new_place)
-
         kill_places=[]
 
-        #remove any places that do not contain a piece
-        for piece in pieces:
-            if piece._location in invalid_places:
-                if piece._white != self._white:
-                    kill_places.append(piece._location)
+        for offset, length in self._places_to_move.items():
+            for i in range(length):
+                new_place=(
+                    self._location[0] + offset[0] * (i + 1),
+                    self._location[1] + (offset[1]*((self._white*2)-1) * (i + 1))
+                )
+
+                new_piece=utils.get_piece_at(pieces, new_place)
+                if new_piece:
+                    if new_piece._white != self._white:
+                        kill_places.append(new_place)
+
+                    break
+                else:
+
+                    move_places.append(new_place)
                 
-        return kill_places
+        return move_places, kill_places
 
     def draw(self, screen):
         piece_position = [
@@ -117,13 +71,36 @@ class Pawn(Piece):
         Piece.__init__(self, location, 'pawn', white)
 
         self._places_to_move={
-            (0, -1): 2, #direction: amount
+            (0, -1): 2 #direction: amount
         }
 
         self._places_to_kill=[
             (-1, -1),
             (1, -1)
         ]
+
+    def find_tiles_where_i_can_move(self, pieces):
+        move_places=super().find_tiles_where_i_can_move(pieces)[0]
+
+        kill_places=[]
+
+        #add every possible move into valid_places
+        for offset in self._places_to_kill:
+            new_place=(
+                self._location[0] + offset[0],
+                self._location[1] + (offset[1])*((self._white*2)-1)
+            )
+
+            piece_here=False
+            for piece in pieces:
+                if piece._location == new_place and piece._white != self._white:
+                    piece_here=True
+            
+            if piece_here:
+                kill_places.append(new_place)
+
+
+        return move_places, kill_places
 
     def move_to(self, pieces, new_location):
         piece_moved=super().move_to(pieces, new_location)
@@ -158,7 +135,25 @@ class Knight(Piece):
             (2, 1)
         ]
 
-        self._places_to_kill=self._places_to_move
+    def find_tiles_where_i_can_move(self, pieces):
+        move_places=[]
+        kill_places=[]
+
+        #add every possible move into valid_places
+        for offset in self._places_to_move:
+            new_place=(
+                self._location[0] + offset[0],
+                self._location[1] + (offset[1])*((self._white*2)-1)
+            )
+
+            piece=utils.get_piece_at(pieces, new_place)
+            if piece:
+                if piece._white != self._white:
+                    kill_places.append(new_place)
+            else:
+                move_places.append(new_place)
+
+        return move_places, kill_places
 
 class Bishop(Piece):
     def __init__(self, location, white = False):

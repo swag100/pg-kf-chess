@@ -156,11 +156,11 @@ while playing: #no need to do playing==True; playing literally just is true
         piece.draw(screen)
 
         if piece == selection: #make this a variable of the piece class, right now only pawn has it.
-            valid_move_places=piece.find_tiles_where_i_can_move(pieces)
+            valid_move_places,valid_kill_places=piece.find_tiles_where_i_can_move(pieces)
+            
             for place in valid_move_places:
                 pygame.draw.circle(screen, (0, 0, 0), ((place[0] * 48) + 24, (place[1] * 48) + 24), 6)
-            
-            valid_kill_places=piece.find_tiles_where_i_can_kill(pieces)
+                
             for place in valid_kill_places:
                 pygame.draw.circle(screen, (0, 0, 0), ((place[0] * 48) + 24, (place[1] * 48) + 24), 24, 4)
                 
