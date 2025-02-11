@@ -1,5 +1,7 @@
 #GAME.PY
 
+#https://spheya.artstation.com/projects/QnaVO3 assets used for chess images.
+
 import sys
 import pygame
 

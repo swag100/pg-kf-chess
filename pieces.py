@@ -15,7 +15,7 @@ class Piece:
 
         #list of offsets applied to the piece's current location
         self._places_to_move=[]
-        self._places_to_kill=[]
+        self._places_to_kill=self._places_to_move
 
         #count of moves. really just for the pawn
         self._moves=0
@@ -40,7 +40,7 @@ class Piece:
         move_places=[]
 
         #add every possible move into valid_places
-        for direction in self._places_to_move:
+        if isinstance(self._places_to_move, list):
             for offset in self._places_to_move:
                 new_place=(
                     self._location[0] + offset[0],
@@ -54,6 +54,22 @@ class Piece:
                 
                 if not piece_here:
                     move_places.append(new_place)
+        
+        else:
+            for offset, length in self._places_to_move.items():
+                for i in range(length):
+                    new_place=(
+                        self._location[0] + offset[0] * (i + 1),
+                        self._location[1] + (offset[1]*((self._white*2)-1) * (i + 1))
+                    )
+
+                    piece_here=False
+                    for piece in pieces:
+                        if piece._location == new_place:
+                            piece_here=True
+                    
+                    if not piece_here:
+                        move_places.append(new_place)
                 
         return move_places
 
@@ -61,13 +77,22 @@ class Piece:
         invalid_places=[]
 
         #add every possible move into valid_places
-        for offset in self._places_to_kill:
-            invalid_places.append(
-                (
-                    self._location[0] + offset[0],
-                    self._location[1] + (offset[1])*((self._white*2)-1)
+        if isinstance(self._places_to_kill, list):
+            for offset in self._places_to_kill:
+                invalid_places.append(
+                    (
+                        self._location[0] + offset[0],
+                        self._location[1] + (offset[1])*((self._white*2)-1)
+                    )
                 )
-            )
+        else:
+            for offset, length in self._places_to_move.items():
+                for i in range(length):
+                    new_place=(
+                        self._location[0] + offset[0] * (i + 1),
+                        self._location[1] + (offset[1]*((self._white*2)-1) * (i + 1))
+                    )
+                    invalid_places.append(new_place)
 
         kill_places=[]
 
@@ -92,15 +117,8 @@ class Pawn(Piece):
         Piece.__init__(self, location, 'pawn', white)
 
         self._places_to_move={
-            (0, -1): -2, #direction: amount
+            (0, -1): 2, #direction: amount
         }
-
-        """
-        self._places_to_move=[
-            (0, -1),
-            (0, -2)
-        ]
-        """
 
         self._places_to_kill=[
             (-1, -1),
@@ -112,7 +130,9 @@ class Pawn(Piece):
     
         if piece_moved:
             if isinstance(self, Pawn):
-                self._places_to_move=[(0, -1)]
+                self._places_to_move={
+                    (0, -1): 1, #direction: amount
+                }
 
                 y=self._location[1]
 
@@ -140,40 +160,62 @@ class Knight(Piece):
 
         self._places_to_kill=self._places_to_move
 
-    def find_tiles_where_i_can_move(self, pieces):
-        move_places=[]
-
-        #add every possible move into valid_places
-        for offset in self._places_to_move:
-            new_place=(
-                self._location[0] + offset[0],
-                self._location[1] + (offset[1])*((self._white*2)-1)
-            )
-
-            piece_here=False
-            for piece in pieces:
-                if piece._location == new_place:
-                    piece_here=True
-            
-            if not piece_here:
-                move_places.append(new_place)
-                
-        return move_places
-
 class Bishop(Piece):
     def __init__(self, location, white = False):
         Piece.__init__(self, location, 'bishop', white)
+
+        self._places_to_move={
+            (-1, -1): 7, #direction: amount
+            (1, -1): 7,
+            (-1, 1): 7,
+            (1, 1): 7
+        }
+
+        self._places_to_kill=self._places_to_move
 
 class Rook(Piece):
     def __init__(self, location, white = False):
         Piece.__init__(self, location, 'rook', white)
 
+        self._places_to_move={
+            (0, -1): 7, #direction: amount
+            (0, 1): 7,
+            (-1, 0): 7,
+            (1, 0): 7
+        }
+
+        self._places_to_kill=self._places_to_move
+
 class King(Piece):
     def __init__(self, location, white = False):
         Piece.__init__(self, location, 'king', white)
+
+        self._places_to_move={
+            (-1, -1): 1, #direction: amount
+            (1, -1): 1,
+            (-1, 1): 1,
+            (1, 1): 1,
+            (0, -1): 1, #direction: amount
+            (0, 1): 1,
+            (-1, 0): 1,
+            (1, 0): 1
+        }
 
         self._places_to_kill=self._places_to_move
 
 class Queen(Piece):
     def __init__(self, location, white = False):
         Piece.__init__(self, location, 'queen', white)
+
+        self._places_to_move={
+            (-1, -1): 7, #direction: amount
+            (1, -1): 7,
+            (-1, 1): 7,
+            (1, 1): 7,
+            (0, -1): 7, #direction: amount
+            (0, 1): 7,
+            (-1, 0): 7,
+            (1, 0): 7
+        }
+
+        self._places_to_kill=self._places_to_move
