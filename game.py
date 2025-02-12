@@ -11,9 +11,12 @@ from pieces import *
 #starts a pygame module
 pygame.init()
 
+TILE_SIZE=48
+TILE_COUNT=8
+
 #screen size variables
-screen_width=384
-screen_height=384
+screen_width=TILE_SIZE*TILE_COUNT
+screen_height=TILE_SIZE*TILE_COUNT
 
 #creates a screen with given dimensions and sets caption
 screen = pygame.display.set_mode((screen_width, screen_width))
@@ -120,14 +123,27 @@ while playing: #no need to do playing==True; playing literally just is true
                 #the TILE coordinates that you're clicking on.
                 #tricky to explain, just ask me about it if you don't understand
                 #// is INTEGER division
-                mouse_location=(mouse_position[0] // 48, mouse_position[1] // 48)
+                mouse_location=(mouse_position[0] // TILE_SIZE, mouse_position[1] // TILE_SIZE)
 
                 if selection:
                     piece_moved=selection.move_to(pieces, mouse_location)
 
                     if piece_moved:
-                        is_white_turn = not is_white_turn
+                        is_white_turn=not is_white_turn
 
+                        move_tiles, kill_tiles=selection.find_tiles_where_i_can_move(pieces)
+
+                        #is any king in danger?
+                        all_kill_tiles=[]
+                        for piece in pieces:
+                            all_kill_tiles.extend(piece.find_tiles_where_i_can_move(pieces)[1])
+                        for piece in pieces:
+                            in_check=False
+                            if isinstance(piece, King):
+                                if piece._location in all_kill_tiles:
+                                    in_check=True
+                                piece._is_in_check=in_check
+                
                 old_selection=selection
 
                 selection=utils.get_piece_at(pieces, mouse_location)
@@ -138,17 +154,16 @@ while playing: #no need to do playing==True; playing literally just is true
                     selection=None
     
     #draw checkered board
-    for row in range(8):
-        for col in range(8):
-            pygame.draw.rect(screen, colors[(col+row)%2], pygame.rect.Rect(48*col, 48*row, 48, 48))
+    for row in range(TILE_COUNT):
+        for col in range(TILE_COUNT):
+            pygame.draw.rect(screen, colors[(col+row)%2], pygame.rect.Rect(TILE_SIZE*col, TILE_SIZE*row, TILE_SIZE, TILE_SIZE))
         
     #draw selection tile
     if selection:
-        selection_surface=pygame.surface.Surface((48, 48))
-        selection_surface.fill((0,255,0))
-        selection_surface.set_alpha(128) #make it half transparent for good looks, haha!!
+        #make it half transparent for good looks, haha!!    
+        selection_surface=utils.make_transparent_rect((TILE_SIZE,)*2, (0,255,0), 128)
 
-        screen.blit(selection_surface, (selection._location[0] * 48, selection._location[1] * 48))
+        screen.blit(selection_surface, (selection._location[0] * TILE_SIZE, selection._location[1] * TILE_SIZE))
 
     #draw pieces based off of their own positions
     for piece in pieces:
@@ -159,10 +174,32 @@ while playing: #no need to do playing==True; playing literally just is true
             valid_move_places,valid_kill_places=piece.find_tiles_where_i_can_move(pieces)
             
             for place in valid_move_places:
-                pygame.draw.circle(screen, (0, 0, 0), ((place[0] * 48) + 24, (place[1] * 48) + 24), 6)
+                pygame.draw.circle(
+                    screen, 
+                    (0, 0, 0), 
+                    (
+                        (place[0] * TILE_SIZE) + (TILE_SIZE / 2), 
+                        (place[1] * TILE_SIZE) + (TILE_SIZE / 2)
+                    ),
+                    6
+                )
                 
             for place in valid_kill_places:
-                pygame.draw.circle(screen, (0, 0, 0), ((place[0] * 48) + 24, (place[1] * 48) + 24), 24, 4)
+                pygame.draw.circle(
+                    screen, 
+                    (0, 0, 0), 
+                    (
+                        (place[0] * TILE_SIZE) + (TILE_SIZE / 2), 
+                        (place[1] * TILE_SIZE) + (TILE_SIZE / 2)
+                    ), 
+                    TILE_SIZE / 2, 
+                    4
+                )
+        
+        if isinstance(piece, King) and piece._is_in_check:
+            check_surface=utils.make_transparent_rect((TILE_SIZE,)*2, (255,0,0), 128)
+
+            screen.blit(check_surface, (piece._location[0] * TILE_SIZE, piece._location[1] * TILE_SIZE))
                 
     #updates the screen
     pygame.display.update()

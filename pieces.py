@@ -20,6 +20,9 @@ class Piece:
         #count of moves. really just for the pawn
         self._moves=0
 
+    def __str__(self):
+        return f'{type(self).__name__} {self._location} {'white' if self._white else 'black'}'
+
     def move_to(self, pieces, new_location):
         piece_moved=False
 
@@ -32,30 +35,56 @@ class Piece:
 
                 self._location=place
                 piece_moved=True
-        
+
         return piece_moved
 
-    def find_tiles_where_i_can_move(self, pieces):
+    #find a better name for this function
+    def find_tiles(self, pieces):
         move_places=[]
         kill_places=[]
 
-        for offset, length in self._places_to_move.items():
-            for i in range(length):
-                new_place=(
-                    self._location[0] + offset[0] * (i + 1),
-                    self._location[1] + (offset[1]*((self._white*2)-1) * (i + 1))
-                )
+        if isinstance(self._places_to_move, dict):
+            for offset, length in self._places_to_move.items():
+                for i in range(length):
+                    new_place=(
+                        self._location[0] + offset[0] * (i + 1),
+                        self._location[1] + (offset[1]*((self._white*2)-1) * (i + 1))
+                    )
 
-                new_piece=utils.get_piece_at(pieces, new_place)
-                if new_piece:
-                    if new_piece._white != self._white:
-                        kill_places.append(new_place)
+                    new_piece=utils.get_piece_at(pieces, new_place)
+                    if new_piece:
+                        if new_piece._white != self._white:
+                            kill_places.append(new_place)
 
-                    break
-                else:
+                        break
+                    else:
 
-                    move_places.append(new_place)
-                
+                        move_places.append(new_place)
+    
+        return move_places, kill_places
+    
+    def find_tiles_where_i_can_move(self, pieces):
+        move_places, kill_places=self.find_tiles(pieces)
+
+        #if board without this piece causes a check, that means any of its moves are invalid
+        new_pieces=pieces.copy()
+        new_pieces.remove(self)
+
+        #WORK ON THIS TOMORROWW!!!
+        """
+        for piece in pieces:
+            if not isinstance(piece, Knight):
+                kill_tiles=piece.find_tiles(new_pieces)[1]
+
+            #is any king in danger?
+            for place in kill_tiles:
+                king_piece=utils.get_piece_at(pieces, place)
+
+                if isinstance(king_piece, King):
+                    if place in move_places:
+                        move_places.remove(place)
+        """
+                        
         return move_places, kill_places
 
     def draw(self, screen):
@@ -92,11 +121,8 @@ class Pawn(Piece):
             )
             
             piece=utils.get_piece_at(pieces, new_place)
-            if piece:
-                if piece._white != self._white:
-                    kill_places.append(new_place)
-                    if isinstance(piece, King):
-                        print('Checkmate fool!')
+            if piece and piece._white != self._white:
+                kill_places.append(new_place)
 
         return move_places, kill_places
 
@@ -132,7 +158,7 @@ class Knight(Piece):
             (2, 1)
         ]
 
-    def find_tiles_where_i_can_move(self, pieces):
+    def find_tiles(self, pieces):
         move_places=[]
         kill_places=[]
 
@@ -197,7 +223,21 @@ class King(Piece):
 
         self._places_to_kill=self._places_to_move
     
+    def find_tiles_where_i_can_move(self, pieces):
+        move_places, kill_places=super().find_tiles_where_i_can_move(pieces)
 
+        #if i move, and im in the killplace of any other piece, DONT ALLOW THAT MOVE!
+        for place in move_places:
+            for piece in pieces:
+                if piece._white != self._white:
+                    bad_places=piece.find_tiles(pieces)[0]
+
+                    if place in bad_places:
+                        if place in move_places:
+                            move_places.remove(place)
+                
+
+        return move_places, kill_places
 
 class Queen(Piece):
     def __init__(self, location, white = False):
