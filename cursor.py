@@ -38,7 +38,9 @@ class Cursor:
                 #the TILE coordinates that you're clicking on.
                 #tricky to explain, just ask me about it if you don't understand
                 #// is INTEGER division
-                mouse_location=(self._position[0] // utils.TILE_SIZE, self._position[1] // utils.TILE_SIZE)
+                mouse_location=(int(self._position[0] // utils.TILE_SIZE), int(self._position[1] // utils.TILE_SIZE))
+
+                print(mouse_location)
 
                 if self._selection:
                     self._selection.move_to(pieces, mouse_location)
@@ -49,10 +51,6 @@ class Cursor:
 
                 if old_selection == self._selection:
                     self._selection=None
-                
-        if event.type == pygame.JOYBUTTONUP:
-            if self._joy == event.joy:
-                print(event)
 
     def update(self):
         self._position[0] += self._speed[0]
