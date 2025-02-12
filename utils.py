@@ -1,6 +1,11 @@
 #contains general functions for use in multiple files. makes things nice and organized!
 import pygame
 
+pygame.joystick.init()
+
+TILE_SIZE=48
+TILE_COUNT=8
+
 def get_piece_at(pieces, location):
     for piece in pieces:
         if piece._location == location:
@@ -12,3 +17,6 @@ def make_transparent_rect(size, color, alpha):
     surface.set_alpha(alpha) #make it half transparent for good looks, haha!!
 
     return surface
+
+def get_joysticks():
+    return [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]

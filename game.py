@@ -4,15 +4,20 @@
 
 import sys
 import pygame
+from utils import TILE_SIZE, TILE_COUNT
 
 #import all piece classes
 from pieces import *
+from cursor import Cursor
 
 #starts a pygame module
 pygame.init()
 
-TILE_SIZE=48
-TILE_COUNT=8
+#https://www.pygame.org/docs/ref/joystick.html
+joysticks=utils.get_joysticks()
+print(joysticks)
+
+cursors=[]
 
 #screen size variables
 screen_width=TILE_SIZE*TILE_COUNT
@@ -107,6 +112,9 @@ def board_setup():
 
 board_setup()
 
+for joystick in joysticks:
+    cursors.append(Cursor(joysticks, joystick, bool(joysticks.index(joystick) % 2)))
+
 while playing: #no need to do playing==True; playing literally just is true
     for event in pygame.event.get():
 
@@ -116,29 +124,20 @@ while playing: #no need to do playing==True; playing literally just is true
             pygame.quit()
             sys.exit()
 
+        if event.type in [pygame.JOYDEVICEADDED, pygame.JOYDEVICEREMOVED]:
+            joysticks=utils.get_joysticks()
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == pygame.BUTTON_LEFT: #left click
                 mouse_position=pygame.mouse.get_pos()
-
-                #the TILE coordinates that you're clicking on.
-                #tricky to explain, just ask me about it if you don't understand
-                #// is INTEGER division
-                mouse_location=(mouse_position[0] // TILE_SIZE, mouse_position[1] // TILE_SIZE)
-
-                if selection:
-                    selection.move_to(pieces, mouse_location)
-                
-                old_selection=selection
-
-                selection=utils.get_piece_at(pieces, mouse_location)
-
-                if old_selection == selection:
-                    selection=None
 
                 """
                 if selection and is_white_turn != selection._white:
                     selection=None
                 """
+
+        for cursor in cursors:
+            cursor.handle_event(pieces, event)
     
     #draw checkered board
     for row in range(TILE_COUNT):
@@ -187,6 +186,10 @@ while playing: #no need to do playing==True; playing literally just is true
             check_surface=utils.make_transparent_rect((TILE_SIZE,)*2, (255,0,0), 128)
 
             screen.blit(check_surface, (piece._location[0] * TILE_SIZE, piece._location[1] * TILE_SIZE))
+            
+    for cursor in cursors:
+        cursor.update()
+        cursor.draw(screen)
                 
     #updates the screen
     pygame.display.update()
