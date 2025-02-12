@@ -189,27 +189,7 @@ class King(Piece):
             (1, 0): 1
         }
 
-        self._is_in_check=False
-
         self._places_to_kill=self._places_to_move
-    
-    """
-    def find_tiles_where_i_can_move(self, pieces):
-        move_places, kill_places=super().find_tiles_where_i_can_move(pieces)
-
-        #if i move, and im in the killplace of any other piece, DONT ALLOW THAT MOVE!
-        for place in move_places:
-            for piece in pieces:
-                if piece._white != self._white:
-                    bad_places=piece.find_tiles_where_i_can_move(pieces)[0]
-
-                    if place in bad_places:
-                        if place in move_places:
-                            move_places.remove(place)
-                
-
-        return move_places, kill_places
-    """
 
 class Queen(Piece):
     def __init__(self, location, white = False):

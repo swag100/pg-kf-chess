@@ -4,13 +4,12 @@ import pygame
 import utils
 
 class Cursor:
-    def __init__(self, joysticks, joystick, white=False):
-        self._joysticks=joysticks
+    def __init__(self, joy, joystick):
         self._joystick=joystick
-        self._joy=joysticks.index(joystick)
-        self._white=white
+        self._joy=joy
+        self._white=bool(joy % 2)
 
-        self._sensitivity=5
+        self._sensitivity=8
         self._threshold=0.2
 
         self._position=[0,0]
@@ -32,18 +31,26 @@ class Cursor:
                 else:
                     self._speed[1]=0
 
-        if event.type == pygame.JOYBUTTONDOWN:
+        if event.type in [pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
             if self._joy == event.joy:
-
                 #the TILE coordinates that you're clicking on.
                 #tricky to explain, just ask me about it if you don't understand
                 #// is INTEGER division
                 mouse_location=(int(self._position[0] // utils.TILE_SIZE), int(self._position[1] // utils.TILE_SIZE))
 
-                print(mouse_location)
+                if event.type == pygame.JOYBUTTONDOWN:
+                    self._selection=utils.get_piece_at(pieces, mouse_location)
 
-                if self._selection:
-                    self._selection.move_to(pieces, mouse_location)
+                    if self._selection and self._white != self._selection._white:
+                        self._selection=None
+
+                else:
+                    if self._selection:
+                        self._selection.move_to(pieces, mouse_location)
+
+                    self._selection=None
+
+                """
                 
                 old_selection=self._selection
 
@@ -51,6 +58,10 @@ class Cursor:
 
                 if old_selection == self._selection:
                     self._selection=None
+
+                if self._selection and self._white != self._selection._white:
+                    self._selection=None
+                """
 
     def update(self):
         self._position[0] += self._speed[0]
