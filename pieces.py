@@ -24,8 +24,6 @@ class Piece:
         return f'{type(self).__name__} {self._location} {'white' if self._white else 'black'}'
 
     def move_to(self, pieces, new_location):
-        piece_moved=False
-
         move_tiles,kill_tiles=self.find_tiles_where_i_can_move(pieces)
 
         for place in move_tiles + kill_tiles:
@@ -34,12 +32,8 @@ class Piece:
                     pieces.remove(utils.get_piece_at(pieces, place))
 
                 self._location=place
-                piece_moved=True
-
-        return piece_moved
-
-    #find a better name for this function
-    def find_tiles(self, pieces):
+    
+    def find_tiles_where_i_can_move(self, pieces):
         move_places=[]
         kill_places=[]
 
@@ -61,30 +55,6 @@ class Piece:
 
                         move_places.append(new_place)
     
-        return move_places, kill_places
-    
-    def find_tiles_where_i_can_move(self, pieces):
-        move_places, kill_places=self.find_tiles(pieces)
-
-        #if board without this piece causes a check, that means any of its moves are invalid
-        new_pieces=pieces.copy()
-        new_pieces.remove(self)
-
-        #WORK ON THIS TOMORROWW!!!
-        """
-        for piece in pieces:
-            if not isinstance(piece, Knight):
-                kill_tiles=piece.find_tiles(new_pieces)[1]
-
-            #is any king in danger?
-            for place in kill_tiles:
-                king_piece=utils.get_piece_at(pieces, place)
-
-                if isinstance(king_piece, King):
-                    if place in move_places:
-                        move_places.remove(place)
-        """
-                        
         return move_places, kill_places
 
     def draw(self, screen):
@@ -158,7 +128,7 @@ class Knight(Piece):
             (2, 1)
         ]
 
-    def find_tiles(self, pieces):
+    def find_tiles_without_jumping(self, pieces):
         move_places=[]
         kill_places=[]
 
@@ -223,6 +193,7 @@ class King(Piece):
 
         self._places_to_kill=self._places_to_move
     
+    """
     def find_tiles_where_i_can_move(self, pieces):
         move_places, kill_places=super().find_tiles_where_i_can_move(pieces)
 
@@ -230,7 +201,7 @@ class King(Piece):
         for place in move_places:
             for piece in pieces:
                 if piece._white != self._white:
-                    bad_places=piece.find_tiles(pieces)[0]
+                    bad_places=piece.find_tiles_where_i_can_move(pieces)[0]
 
                     if place in bad_places:
                         if place in move_places:
@@ -238,6 +209,7 @@ class King(Piece):
                 
 
         return move_places, kill_places
+    """
 
 class Queen(Piece):
     def __init__(self, location, white = False):

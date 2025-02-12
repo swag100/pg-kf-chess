@@ -126,23 +126,7 @@ while playing: #no need to do playing==True; playing literally just is true
                 mouse_location=(mouse_position[0] // TILE_SIZE, mouse_position[1] // TILE_SIZE)
 
                 if selection:
-                    piece_moved=selection.move_to(pieces, mouse_location)
-
-                    if piece_moved:
-                        is_white_turn=not is_white_turn
-
-                        move_tiles, kill_tiles=selection.find_tiles_where_i_can_move(pieces)
-
-                        #is any king in danger?
-                        all_kill_tiles=[]
-                        for piece in pieces:
-                            all_kill_tiles.extend(piece.find_tiles_where_i_can_move(pieces)[1])
-                        for piece in pieces:
-                            in_check=False
-                            if isinstance(piece, King):
-                                if piece._location in all_kill_tiles:
-                                    in_check=True
-                                piece._is_in_check=in_check
+                    selection.move_to(pieces, mouse_location)
                 
                 old_selection=selection
 
@@ -150,8 +134,11 @@ while playing: #no need to do playing==True; playing literally just is true
 
                 if old_selection == selection:
                     selection=None
+
+                """
                 if selection and is_white_turn != selection._white:
                     selection=None
+                """
     
     #draw checkered board
     for row in range(TILE_COUNT):
