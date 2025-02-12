@@ -90,15 +90,13 @@ class Pawn(Piece):
                 self._location[0] + offset[0],
                 self._location[1] + (offset[1])*((self._white*2)-1)
             )
-
-            piece_here=False
-            for piece in pieces:
-                if piece._location == new_place and piece._white != self._white:
-                    piece_here=True
             
-            if piece_here:
-                kill_places.append(new_place)
-
+            piece=utils.get_piece_at(pieces, new_place)
+            if piece:
+                if piece._white != self._white:
+                    kill_places.append(new_place)
+                    if isinstance(piece, King):
+                        print('Checkmate fool!')
 
         return move_places, kill_places
 
@@ -106,16 +104,15 @@ class Pawn(Piece):
         piece_moved=super().move_to(pieces, new_location)
     
         if piece_moved:
-            if isinstance(self, Pawn):
-                self._places_to_move={
-                    (0, -1): 1, #direction: amount
-                }
+            self._places_to_move={
+                (0, -1): 1, #direction: amount
+            }
 
-                y=self._location[1]
+            y=self._location[1]
 
-                if y > 6 or y < 1:
-                    pieces.append(Queen(self._location, self._white))
-                    pieces.remove(self)
+            if y > 6 or y < 1:
+                pieces.append(Queen(self._location, self._white))
+                pieces.remove(self)
 
         return piece_moved
         
@@ -196,7 +193,11 @@ class King(Piece):
             (1, 0): 1
         }
 
+        self._is_in_check=False
+
         self._places_to_kill=self._places_to_move
+    
+
 
 class Queen(Piece):
     def __init__(self, location, white = False):
