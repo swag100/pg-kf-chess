@@ -32,6 +32,18 @@ class Piece:
                     pieces.remove(utils.get_piece_at(pieces, place))
 
                 self._location=place
+
+                #putting it here cause im lazy
+                if isinstance(self, Pawn):
+                    self._places_to_move={
+                        (0, -1): 1, #direction: amount
+                    }
+
+                    y=self._location[1]
+
+                    if y > 6 or y < 1:
+                        pieces.append(Queen(self._location, self._white))
+                        pieces.remove(self)
     
     def find_tiles_where_i_can_move(self, pieces):
         move_places=[]
@@ -95,22 +107,6 @@ class Pawn(Piece):
                 kill_places.append(new_place)
 
         return move_places, kill_places
-
-    def move_to(self, pieces, new_location):
-        piece_moved=super().move_to(pieces, new_location)
-    
-        if piece_moved:
-            self._places_to_move={
-                (0, -1): 1, #direction: amount
-            }
-
-            y=self._location[1]
-
-            if y > 6 or y < 1:
-                pieces.append(Queen(self._location, self._white))
-                pieces.remove(self)
-
-        return piece_moved
         
 class Knight(Piece):
 
