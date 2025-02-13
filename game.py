@@ -4,7 +4,7 @@
 
 import sys
 import pygame
-from utils import TILE_SIZE, TILE_COUNT
+from utils import TILE_SIZE, TILE_COUNT, COLORS, BOARD_POSITION
 
 #import all piece classes
 from pieces import *
@@ -15,7 +15,6 @@ pygame.init()
 
 #https://www.pygame.org/docs/ref/joystick.html
 joysticks=utils.get_joysticks()
-print(joysticks)
 
 cursors=[]
 
@@ -24,19 +23,6 @@ surface = pygame.surface.Surface(utils.SCREEN_SIZE)
 
 screen = pygame.display.set_mode(tuple(axis * utils.SCREEN_ZOOM for axis in utils.SCREEN_SIZE))
 pygame.display.set_caption("Chess")
-
-#where we draw the entire board and pieces
-board_position=(12,18)
-
-#color list
-colors=[
-    (217, 216, 157), #white
-    (130, 76, 76), #black
-    (227, 128, 74), #DARK white
-    (77, 51, 59), #DARK black
-    (45, 30, 34), #outline color
-    (83, 149, 170), #background color
-]
 
 #variable to control game loop
 playing=True
@@ -141,29 +127,41 @@ while playing: #no need to do playing==True; playing literally just is true
             cursor_setup()
 
         for cursor in cursors:
-            cursor.handle_event(pieces, event, board_position)
+            cursor.handle_event(pieces, event, BOARD_POSITION)
 
     #UPDATE THINGS
     
     for piece in pieces:
-        piece.update(board_position)
+        piece.update(BOARD_POSITION)
     for cursor in cursors:
         cursor.update()
 
     #DRAW!!
 
     #fill background
-    surface.fill(colors[5])
+    surface.fill(COLORS[5])
+
+    #draw board outline
+    pygame.draw.rect(
+        surface, 
+        COLORS[4], 
+        pygame.rect.Rect(
+            BOARD_POSITION[0]-1, 
+            BOARD_POSITION[1]-1, 
+            TILE_SIZE*TILE_COUNT+2, 
+            TILE_SIZE*TILE_COUNT+2,
+        )
+    )
     
     #draw checkered board
     for row in range(TILE_COUNT):
         for col in range(TILE_COUNT):
             pygame.draw.rect(
                 surface, 
-                colors[(col+row)%2], 
+                COLORS[(col+row)%2], 
                 pygame.rect.Rect(
-                    (TILE_SIZE*col)+board_position[0], 
-                    (TILE_SIZE*row)+board_position[1], 
+                    (TILE_SIZE*col)+BOARD_POSITION[0], 
+                    (TILE_SIZE*row)+BOARD_POSITION[1], 
                     TILE_SIZE, 
                     TILE_SIZE
                 )
@@ -185,15 +183,15 @@ while playing: #no need to do playing==True; playing literally just is true
             selection_rect=selection._sprite.get_rect(topleft=selection._position)
 
             selection._position=[
-                cursor._position[0] - (selection_rect.w / 2),
-                cursor._position[1] - (selection_rect.h / 2),
+                cursor._position[0] - (selection_rect.w / 2) - (selection._offset[0]),
+                cursor._position[1] - (selection_rect.h / 2) + (selection._offset[1] / 2),
             ]
     
     #draw hover tile
     for cursor in cursors:
         if cursor._selection: continue
 
-        cursor_location=((cursor._position[0]-board_position[0]) // TILE_SIZE, (cursor._position[1]-board_position[1]) // TILE_SIZE)
+        cursor_location=((cursor._position[0]-BOARD_POSITION[0]) // TILE_SIZE, (cursor._position[1]-BOARD_POSITION[1]) // TILE_SIZE)
 
         cursor._hover=utils.get_piece_at(pieces, cursor_location)
         if cursor._hover:
@@ -217,24 +215,24 @@ while playing: #no need to do playing==True; playing literally just is true
                 for place in valid_move_places:
                     pygame.draw.circle(
                         surface, 
-                        (0, 0, 0), 
+                        COLORS[4], 
                         (
-                            (place[0] * TILE_SIZE) + (TILE_SIZE / 2) + board_position[0], 
-                            (place[1] * TILE_SIZE) + (TILE_SIZE / 2) + board_position[1]
+                            (place[0] * TILE_SIZE) + (TILE_SIZE / 2) + BOARD_POSITION[0], 
+                            (place[1] * TILE_SIZE) + (TILE_SIZE / 2) + BOARD_POSITION[1]
                         ),
-                        6
+                        3
                     )
                     
                 for place in valid_kill_places:
                     pygame.draw.circle(
                         surface, 
-                        (0, 0, 0), 
+                        COLORS[4], 
                         (
-                            (place[0] * TILE_SIZE) + (TILE_SIZE / 2) + board_position[0], 
-                            (place[1] * TILE_SIZE) + (TILE_SIZE / 2) + board_position[1]
+                            (place[0] * TILE_SIZE) + (TILE_SIZE / 2) + BOARD_POSITION[0], 
+                            (place[1] * TILE_SIZE) + (TILE_SIZE / 2) + BOARD_POSITION[1]
                         ), 
                         TILE_SIZE / 2, 
-                        4
+                        2
                     )
 
         #logic moved to pieces

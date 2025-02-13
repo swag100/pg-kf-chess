@@ -1,14 +1,15 @@
 #PIECES.PY
+
+import pygame
 import utils
-from math import ceil
+from math import floor
 
 #get access to the sprites
-import spritesheet_files.parser as parser
+from parser import Parser
 
 class Piece:
     def __init__(self, location, sprite, white = False):
         self._location = location
-        self._sprite = parser.sprites[sprite + str(white)]
 
         #color will always be either white or black, like a boolean
         self._white = white
@@ -18,15 +19,40 @@ class Piece:
         self._places_to_kill=self._places_to_move
 
         #visual instance variables
-        self._position=[axis*utils.TILE_SIZE for axis in self._location]
+        self._offset=(0,-20)
+        self._position = [
+            (self._location[0] * utils.TILE_SIZE) + utils.BOARD_POSITION[0] + self._offset[0],
+            (self._location[1] * utils.TILE_SIZE) + utils.BOARD_POSITION[1] + self._offset[1],
+        ]
         self._lerp_position=self._position
-        self._offset=(0,0)
+
+        #sprite
+        self._sprites = Parser("images/pieces.png",(16,32)).get_sprites(utils.PIECES)
+
+        self._sprite = self.assemble_sprite(self._sprites[sprite])
 
         #count of moves. really just for the pawn
         self._moves=0
 
     def __str__(self):
         return f'{type(self).__name__} {self._location} {'white' if self._white else 'black'}'
+
+    def assemble_sprite(self, sprite_colors):
+        final_sprite=pygame.surface.Surface(sprite_colors[0].get_size(), pygame.SRCALPHA)
+
+        #find correct color
+        fill_colors=[
+            utils.COLORS[4],
+            utils.COLORS[int(not self._white)],
+            utils.COLORS[int(not self._white)+2],
+        ]
+
+        for i in range(len(sprite_colors)):
+            surface=sprite_colors[i]
+            utils.fill(surface, fill_colors[i])
+            final_sprite.blit(surface, (0,0))
+
+        return final_sprite
 
     def move_to(self, pieces, new_location):
         move_tiles,kill_tiles=self.find_tiles_where_i_can_move(pieces)
@@ -80,8 +106,8 @@ class Piece:
         return move_places, kill_places
     
     def update(self, board_position=(0,0)):
-        self._lerp_position[0] += ceil((self._position[0] - self._lerp_position[0]) * 0.25)
-        self._lerp_position[1] += ceil((self._position[1] - self._lerp_position[1]) * 0.25)
+        self._lerp_position[0] += (self._position[0] - self._lerp_position[0]) * 0.25
+        self._lerp_position[1] += (self._position[1] - self._lerp_position[1]) * 0.25
 
         self._position = [
             (self._location[0] * utils.TILE_SIZE) + board_position[0] + self._offset[0],

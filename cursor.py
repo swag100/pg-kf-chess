@@ -2,6 +2,7 @@
 
 import pygame
 import utils
+from parser import Parser
 
 class Cursor:
     def __init__(self, joy, joystick):
@@ -9,13 +10,34 @@ class Cursor:
         self._joy=joy
         self._white=bool(joy % 2)
 
-        self._sensitivity=6
+        self._sensitivity=3
         self._threshold=0.1
 
         self._position=[0,0]
         self._speed=[0,0]
 
         self._selection=None
+
+        #visual instance variables!
+        self._sprites = Parser("images/cursor.png",(16,16)).get_sprites(["idle", "grab"])
+        self._sprite = self.assemble_sprite(self._sprites["idle"])
+
+    def assemble_sprite(self, sprite_colors):
+        final_sprite=pygame.surface.Surface(sprite_colors[0].get_size(), pygame.SRCALPHA)
+
+        #find correct color
+        fill_colors=[
+            utils.COLORS[4],
+            utils.COLORS[int(not self._white)],
+            utils.COLORS[int(not self._white)+2],
+        ]
+
+        for i in range(len(sprite_colors)):
+            surface=sprite_colors[i]
+            utils.fill(surface, fill_colors[i])
+            final_sprite.blit(surface, (0,0))
+
+        return final_sprite
 
     def handle_event(self, pieces, event, board_position=(0,0)):
         if event.type == pygame.JOYAXISMOTION:
@@ -39,12 +61,16 @@ class Cursor:
                 cursor_location=(int((self._position[0] - board_position[0]) // utils.TILE_SIZE), int((self._position[1] - board_position[1]) // utils.TILE_SIZE))
 
                 if event.type == pygame.JOYBUTTONDOWN:
+                    self._sprite = self.assemble_sprite(self._sprites["grab"])
+
                     self._selection=utils.get_piece_at(pieces, cursor_location)
 
                     if self._selection and self._white != self._selection._white:
                         self._selection=None
 
                 else:
+                    self._sprite = self.assemble_sprite(self._sprites["idle"])
+
                     if self._selection:
                         self._selection.move_to(pieces, cursor_location)
 
@@ -64,4 +90,6 @@ class Cursor:
                 self._position[i]=0
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (255,0,0) if self._white else (0,255,0), self._position, 4)
+        #pygame.draw.circle(screen, (255,0,0) if self._white else (0,255,0), self._position, 4)
+
+        screen.blit(self._sprite, (self._position[0] - 7, self._position[1] - 1))

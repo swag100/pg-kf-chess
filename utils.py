@@ -3,12 +3,27 @@ import pygame
 
 pygame.joystick.init()
 
-TILE_SIZE=24
+TILE_SIZE=16
 TILE_COUNT=8
 
 #screen size variables
-SCREEN_SIZE=(256,224)
-SCREEN_ZOOM=3
+SCREEN_SIZE=(192,192)
+SCREEN_ZOOM=4
+
+#where we draw the entire board and pieces
+BOARD_POSITION=(31,31)
+
+PIECES=['pawn', 'knight', 'bishop', 'rook', 'king', 'queen']
+
+#color list
+COLORS=[
+    (217, 216, 157), #white
+    (130, 76, 76), #black
+    (227, 128, 74), #DARK white
+    (77, 51, 59), #DARK black
+    (45, 30, 34), #outline color
+    (83, 149, 170), #background color
+]
 
 def get_piece_at(pieces, location):
     for piece in pieces:
@@ -24,3 +39,12 @@ def make_transparent_rect(size, color, alpha):
 
 def get_joysticks():
     return [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
+
+#https://stackoverflow.com/questions/42821442/
+def fill(surface, color):
+    w, h = surface.get_size()
+    r, g, b = color
+    for x in range(w):
+        for y in range(h):
+            a = surface.get_at((x, y))[3]
+            surface.set_at((x, y), pygame.Color(r, g, b, a))
