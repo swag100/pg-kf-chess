@@ -205,8 +205,19 @@ while playing: #no need to do playing==True; playing literally just is true
         
                 cursor._hover._lerp_position[1]-=1
 
-    #draw pieces based off of their own positions
+    #sort by location y
+    y_sorted_pieces=[]
     for piece in pieces:
+        if len(y_sorted_pieces) <= 0:
+            y_sorted_pieces.append(piece)
+        else:
+            if piece._location[1] < y_sorted_pieces[0]._location[1]:
+                y_sorted_pieces.insert(0, piece)
+            else:
+                y_sorted_pieces.insert(1, piece)
+
+    #draw pieces based off of their own positions, but sorted!
+    for piece in y_sorted_pieces:
 
         for cursor in cursors:
             if piece == cursor._selection: #make this a variable of the piece class, right now only pawn has it.
