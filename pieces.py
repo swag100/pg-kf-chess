@@ -33,10 +33,7 @@ class Piece:
 
         #count of moves. really just for the pawn
         self._moves=0
-
-    def __str__(self):
-        return f'{type(self).__name__} {self._location} {'white' if self._white else 'black'}'
-
+        
     def assemble_sprite(self, sprite_colors):
         final_sprite=pygame.surface.Surface(sprite_colors[0].get_size(), pygame.SRCALPHA)
 
