@@ -77,3 +77,6 @@ def draw_board(surface):
                     TILE_SIZE
                 )
             )
+
+def get_white_string(white):
+    return 'white' if white else 'black'

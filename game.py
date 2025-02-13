@@ -237,7 +237,7 @@ while playing: #no need to do playing==True; playing literally just is true
 
 #create winner text surface, along with outlines
 my_font = pygame.font.Font('fonts/PixelOperator8-Bold.ttf', 8)
-text_surface = my_font.render('White' if winner else 'Black' + ' won!', False, utils.COLORS[4])
+text_surface = my_font.render(utils.get_white_string(winner).title() + ' won!', False, utils.COLORS[4])
 
 while not playing: #this will last until you close the window
     for event in pygame.event.get():
@@ -255,8 +255,6 @@ while not playing: #this will last until you close the window
 
     #fill background
     surface.fill(COLORS[5])
-
-    utils.draw_board(surface)
 
     surface.blit(text_surface, text_surface.get_rect(center=[x // 2 for x in utils.SCREEN_SIZE]))
 
