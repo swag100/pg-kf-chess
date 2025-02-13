@@ -3,6 +3,8 @@ import pygame
 
 pygame.joystick.init()
 
+FRAME_RATE=60
+
 TILE_SIZE=16
 TILE_COUNT=8
 
@@ -48,3 +50,30 @@ def fill(surface, color):
         for y in range(h):
             a = surface.get_at((x, y))[3]
             surface.set_at((x, y), pygame.Color(r, g, b, a))
+
+def draw_board(surface):
+    #draw board outline
+    pygame.draw.rect(
+        surface, 
+        COLORS[4], 
+        pygame.rect.Rect(
+            BOARD_POSITION[0]-1, 
+            BOARD_POSITION[1]-1, 
+            TILE_SIZE*TILE_COUNT+2, 
+            TILE_SIZE*TILE_COUNT+2,
+        )
+    )
+    
+    #draw checkered board
+    for row in range(TILE_COUNT):
+        for col in range(TILE_COUNT):
+            pygame.draw.rect(
+                surface, 
+                COLORS[(col+row)%2], 
+                pygame.rect.Rect(
+                    (TILE_SIZE*col)+BOARD_POSITION[0], 
+                    (TILE_SIZE*row)+BOARD_POSITION[1], 
+                    TILE_SIZE, 
+                    TILE_SIZE
+                )
+            )

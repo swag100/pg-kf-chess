@@ -23,12 +23,16 @@ surface = pygame.surface.Surface(utils.SCREEN_SIZE)
 
 screen = pygame.display.set_mode(tuple(axis * utils.SCREEN_ZOOM for axis in utils.SCREEN_SIZE))
 pygame.display.set_caption("Chess")
+pygame.mouse.set_visible(False)
 
 #variable to control game loop
 playing=True
 
 #list that contains every piece object
 pieces=[]
+
+#winner: who won the game?
+winner=None
 
 def board_setup():
     #create both rows of pawns with loops
@@ -129,6 +133,11 @@ while playing: #no need to do playing==True; playing literally just is true
         if event.type in [pygame.JOYDEVICEADDED, pygame.JOYDEVICEREMOVED]:
             cursor_setup()
 
+        if event.type == pygame.USEREVENT:
+            winner=event.winning_color
+
+            playing=False
+
         for cursor in cursors:
             cursor.handle_event(pieces, event, BOARD_POSITION)
 
@@ -144,31 +153,7 @@ while playing: #no need to do playing==True; playing literally just is true
     #fill background
     surface.fill(COLORS[5])
 
-    #draw board outline
-    pygame.draw.rect(
-        surface, 
-        COLORS[4], 
-        pygame.rect.Rect(
-            BOARD_POSITION[0]-1, 
-            BOARD_POSITION[1]-1, 
-            TILE_SIZE*TILE_COUNT+2, 
-            TILE_SIZE*TILE_COUNT+2,
-        )
-    )
-    
-    #draw checkered board
-    for row in range(TILE_COUNT):
-        for col in range(TILE_COUNT):
-            pygame.draw.rect(
-                surface, 
-                COLORS[(col+row)%2], 
-                pygame.rect.Rect(
-                    (TILE_SIZE*col)+BOARD_POSITION[0], 
-                    (TILE_SIZE*row)+BOARD_POSITION[1], 
-                    TILE_SIZE, 
-                    TILE_SIZE
-                )
-            )
+    utils.draw_board(surface)
 
     #sort by location y
     y_sorted_pieces = sorted(pieces, key=lambda x: x._location[1])
@@ -177,11 +162,7 @@ while playing: #no need to do playing==True; playing literally just is true
     for cursor in cursors:
         selection=cursor._selection
 
-        if selection:
-            #make it half transparent for good looks, haha!!    
-            #selection_surface=utils.make_transparent_rect((TILE_SIZE,)*2, (0,255,0), 128)
-            #surface.blit(selection_surface, ((selection._location[0] * TILE_SIZE) + board_position[0], (selection._location[1] * TILE_SIZE) + board_position[1]))
-
+        if selection and selection in y_sorted_pieces:
             #make it the top-most piece, so it doesnt appear behind any others!
             y_sorted_pieces.append(y_sorted_pieces.pop(y_sorted_pieces.index(selection)))
 
@@ -200,16 +181,15 @@ while playing: #no need to do playing==True; playing literally just is true
         cursor_location=((cursor._position[0]-BOARD_POSITION[0]) // TILE_SIZE, (cursor._position[1]-BOARD_POSITION[1]) // TILE_SIZE)
 
         cursor._hover=utils.get_piece_at(pieces, cursor_location)
-        if cursor._hover:
-            if cursor._white != cursor._hover._white:
-                cursor._hover=None
 
-            else:
-                #make it half transparent for good looks, haha!!    
-                #hover_surface=utils.make_transparent_rect((TILE_SIZE,)*2, (0,255,0), 64)
-                #surface.blit(hover_surface, ((cursor._hover._location[0] * TILE_SIZE) + board_position[0], (cursor._hover._location[1] * TILE_SIZE) + board_position[1]))
-        
-                cursor._hover._lerp_position[1]-=1
+        if cursor._hover and cursor._hover._cool_down_time_elapsed <= cursor._hover._cool_down_time:
+            cursor._hover=None
+
+        if cursor._hover and cursor._white != cursor._hover._white:
+            cursor._hover=None
+
+        if cursor._hover:
+            cursor._hover._lerp_position[1]-=1
 
     #draw pieces based off of their own positions, but sorted!
     for piece in y_sorted_pieces:
@@ -253,4 +233,37 @@ while playing: #no need to do playing==True; playing literally just is true
     pygame.display.update()
 
     #sets constant frame rate
-    pygame.time.Clock().tick(60)
+    pygame.time.Clock().tick(utils.FRAME_RATE)
+
+#create winner text surface, along with outlines
+my_font = pygame.font.Font('fonts/PixelOperator8-Bold.ttf', 8)
+text_surface = my_font.render('White' if winner else 'Black' + ' won!', False, utils.COLORS[4])
+
+while not playing: #this will last until you close the window
+    for event in pygame.event.get():
+
+        #ends the game on closure
+        if event.type == pygame.QUIT:
+            #this is going to be done whether you like it or not boy.
+            pygame.quit()
+            sys.exit()
+
+        if event.type in [pygame.JOYDEVICEADDED, pygame.JOYDEVICEREMOVED]:
+            cursor_setup()
+
+    #DRAW!!
+
+    #fill background
+    surface.fill(COLORS[5])
+
+    utils.draw_board(surface)
+
+    surface.blit(text_surface, text_surface.get_rect(center=[x // 2 for x in utils.SCREEN_SIZE]))
+
+    screen.blit(pygame.transform.scale_by(surface, utils.SCREEN_ZOOM),(0,0))
+                
+    #updates the screen
+    pygame.display.update()
+
+    #sets constant frame rate
+    pygame.time.Clock().tick(utils.FRAME_RATE)

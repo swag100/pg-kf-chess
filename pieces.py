@@ -2,7 +2,6 @@
 
 import pygame
 import utils
-from math import floor
 
 #get access to the sprites
 from parser import Parser
@@ -28,11 +27,15 @@ class Piece:
 
         #sprite
         self._sprites = Parser("images/pieces.png",(16,32)).get_sprites(utils.PIECES)
-
-        self._sprite = self.assemble_sprite(self._sprites[sprite])
+        self._piece_sprite = self.assemble_sprite(self._sprites[sprite])
+        self._sprite=self._piece_sprite
 
         #count of moves. really just for the pawn
         self._moves=0
+
+        #WOOOO KUNG FU CHESS!
+        self._cool_down_time=5
+        self._cool_down_time_elapsed=5
         
     def assemble_sprite(self, sprite_colors):
         final_sprite=pygame.surface.Surface(sprite_colors[0].get_size(), pygame.SRCALPHA)
@@ -50,16 +53,40 @@ class Piece:
             final_sprite.blit(surface, (0,0))
 
         return final_sprite
+        
+    def mask_sprite(self, cur_sprite, mask_amount):
+        final_sprite=cur_sprite.copy()
+
+        sprite_rect=final_sprite.get_rect()
+        sprite_bounding_rect=final_sprite.get_bounding_rect()
+
+        mask_sprite_size=(
+            sprite_rect.size[0],
+            sprite_rect.size[1] - (sprite_bounding_rect.h * mask_amount)
+        )
+
+        mask_sprite=pygame.surface.Surface(mask_sprite_size, pygame.SRCALPHA)
+        mask_sprite.blit(final_sprite, sprite_rect)
+        utils.fill(mask_sprite, utils.COLORS[4])
+
+        final_sprite.blit(mask_sprite, (0, 0))
+
+        return final_sprite
 
     def move_to(self, pieces, new_location):
         move_tiles,kill_tiles=self.find_tiles_where_i_can_move(pieces)
 
         for place in move_tiles + kill_tiles:
             if place == new_location:
+                piece=utils.get_piece_at(pieces, place)
+
                 if place in kill_tiles:
-                    pieces.remove(utils.get_piece_at(pieces, place))
+                    pieces.remove(piece)
 
                 self._location=place
+
+                #reset elapsed time
+                self._cool_down_time_elapsed=0
 
                 #putting it here cause im lazy
                 if isinstance(self, Pawn):
@@ -72,6 +99,11 @@ class Piece:
                     if y > 6 or y < 1:
                         pieces.append(Queen(self._location, self._white))
                         pieces.remove(self)
+                
+                if isinstance(piece, King):
+                    #post won event
+                    event_to_post = pygame.event.Event(pygame.USEREVENT, {'winning_color': self._white})
+                    pygame.event.post(event_to_post)
     
     def find_tiles_where_i_can_move(self, pieces):
         move_places=[]
@@ -103,6 +135,8 @@ class Piece:
         return move_places, kill_places
     
     def update(self, board_position=(0,0)):
+        self._cool_down_time_elapsed+=(1/utils.FRAME_RATE)
+
         self._lerp_position[0] += (self._position[0] - self._lerp_position[0]) * 0.25
         self._lerp_position[1] += (self._position[1] - self._lerp_position[1]) * 0.25
 
@@ -112,6 +146,11 @@ class Piece:
         ]
 
     def draw(self, screen):
+        if self._cool_down_time_elapsed < self._cool_down_time:
+            self._sprite = self.mask_sprite(self._piece_sprite, self._cool_down_time_elapsed / self._cool_down_time)
+        else:
+            self._sprite = self._piece_sprite
+
         screen.blit(self._sprite, self._lerp_position)
 
 class Pawn(Piece):

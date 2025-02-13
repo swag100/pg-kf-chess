@@ -59,6 +59,7 @@ class Cursor:
 
         if event.type in [pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP, pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP]:
             if self._joystick:
+                if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP]: return
                 if self._joy != event.joy: return
 
             #the TILE coordinates that you're clicking on.
@@ -80,8 +81,13 @@ class Cursor:
 
                 self._selection=utils.get_piece_at(pieces, cursor_location)
 
-                if self._selection and self._white != self._selection._white:
-                    self._selection=None
+                if self._selection:
+                    if self._white != self._selection._white:
+                        self._selection=None
+                        
+                if self._selection:
+                    if self._selection._cool_down_time_elapsed <= self._selection._cool_down_time:
+                        self._selection=None
 
             else:
                 self._sprite = self.assemble_sprite(self._sprites["idle"])
