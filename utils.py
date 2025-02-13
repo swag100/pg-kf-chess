@@ -3,8 +3,12 @@ import pygame
 
 pygame.joystick.init()
 
-TILE_SIZE=48
+TILE_SIZE=24
 TILE_COUNT=8
+
+#screen size variables
+SCREEN_SIZE=(256,224)
+SCREEN_ZOOM=3
 
 def get_piece_at(pieces, location):
     for piece in pieces:

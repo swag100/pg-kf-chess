@@ -1,6 +1,6 @@
 #PIECES.PY
-import pygame
 import utils
+from math import ceil
 
 #get access to the sprites
 import spritesheet_files.parser as parser
@@ -16,6 +16,11 @@ class Piece:
         #list of offsets applied to the piece's current location
         self._places_to_move=[]
         self._places_to_kill=self._places_to_move
+
+        #visual instance variables
+        self._position=[axis*utils.TILE_SIZE for axis in self._location]
+        self._lerp_position=self._position
+        self._offset=(0,0)
 
         #count of moves. really just for the pawn
         self._moves=0
@@ -64,18 +69,27 @@ class Piece:
 
                         break
                     else:
+                        out_of_bounds=False
+                        for axis in new_place:
+                            if not 0 <= axis < utils.TILE_COUNT:
+                                out_of_bounds=True
 
-                        move_places.append(new_place)
-    
+                        if not out_of_bounds:
+                            move_places.append(new_place)
+
         return move_places, kill_places
+    
+    def update(self, board_position=(0,0)):
+        self._lerp_position[0] += ceil((self._position[0] - self._lerp_position[0]) * 0.25)
+        self._lerp_position[1] += ceil((self._position[1] - self._lerp_position[1]) * 0.25)
 
-    def draw(self, screen):
-        piece_position = [
-            (self._location[0] * 48) + 3,
-            (self._location[1] * 48) + 3,
+        self._position = [
+            (self._location[0] * utils.TILE_SIZE) + board_position[0] + self._offset[0],
+            (self._location[1] * utils.TILE_SIZE) + board_position[1] + self._offset[1],
         ]
 
-        screen.blit(self._sprite, piece_position)
+    def draw(self, screen):
+        screen.blit(self._sprite, self._lerp_position)
 
 class Pawn(Piece):
     def __init__(self, location, white = False):
@@ -124,7 +138,7 @@ class Knight(Piece):
             (2, 1)
         ]
 
-    def find_tiles_without_jumping(self, pieces):
+    def find_tiles_where_i_can_move(self, pieces):
         move_places=[]
         kill_places=[]
 
@@ -140,7 +154,13 @@ class Knight(Piece):
                 if piece._white != self._white:
                     kill_places.append(new_place)
             else:
-                move_places.append(new_place)
+                out_of_bounds=False
+                for axis in new_place:
+                    if not 0 <= axis < utils.TILE_COUNT:
+                        out_of_bounds=True
+
+                if not out_of_bounds:
+                    move_places.append(new_place)
 
         return move_places, kill_places
 

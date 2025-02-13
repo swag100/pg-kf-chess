@@ -19,20 +19,24 @@ print(joysticks)
 
 cursors=[]
 
-#screen size variables
-screen_width=TILE_SIZE*TILE_COUNT
-screen_height=TILE_SIZE*TILE_COUNT
-
 #creates a screen with given dimensions and sets caption
-screen = pygame.display.set_mode((screen_width, screen_width))
+surface = pygame.surface.Surface(utils.SCREEN_SIZE)
+
+screen = pygame.display.set_mode(tuple(axis * utils.SCREEN_ZOOM for axis in utils.SCREEN_SIZE))
 pygame.display.set_caption("Chess")
 
-#color code constants
-WHITE=(255, 255, 255)
-BLACK=(127, 159, 184)
+#where we draw the entire board and pieces
+board_position=(12,18)
 
 #color list
-colors=[WHITE, BLACK]
+colors=[
+    (217, 216, 157), #white
+    (130, 76, 76), #black
+    (227, 128, 74), #DARK white
+    (77, 51, 59), #DARK black
+    (45, 30, 34), #outline color
+    (83, 149, 170), #background color
+]
 
 #variable to control game loop
 playing=True
@@ -107,13 +111,20 @@ def board_setup():
 board_setup()
 
 def cursor_setup():
-    if len(cursors) == 0:
-        for joystick in joysticks:
-            cursors.append(Cursor(joysticks.index(joystick), joystick))
-    else:
+    joysticks=utils.get_joysticks()
+    
+    for joystick in joysticks:
+        already_has_cursor=False
         for cursor in cursors:
-            if cursor._joystick not in joysticks:
-                cursors.remove(cursor)
+            if cursor._joystick == joystick:
+                already_has_cursor=True
+
+        if not already_has_cursor: 
+            cursors.append(Cursor(joysticks.index(joystick) % 2, joystick))
+        
+    for cursor in cursors:
+        if cursor._joystick not in joysticks:
+            cursors.remove(cursor)
 
 cursor_setup()
 
@@ -127,19 +138,36 @@ while playing: #no need to do playing==True; playing literally just is true
             sys.exit()
 
         if event.type in [pygame.JOYDEVICEADDED, pygame.JOYDEVICEREMOVED]:
-            joysticks=utils.get_joysticks()
-
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == pygame.BUTTON_LEFT: #left click
-                mouse_position=pygame.mouse.get_pos()
+            cursor_setup()
 
         for cursor in cursors:
-            cursor.handle_event(pieces, event)
+            cursor.handle_event(pieces, event, board_position)
+
+    #UPDATE THINGS
+    
+    for piece in pieces:
+        piece.update(board_position)
+    for cursor in cursors:
+        cursor.update()
+
+    #DRAW!!
+
+    #fill background
+    surface.fill(colors[5])
     
     #draw checkered board
     for row in range(TILE_COUNT):
         for col in range(TILE_COUNT):
-            pygame.draw.rect(screen, colors[(col+row)%2], pygame.rect.Rect(TILE_SIZE*col, TILE_SIZE*row, TILE_SIZE, TILE_SIZE))
+            pygame.draw.rect(
+                surface, 
+                colors[(col+row)%2], 
+                pygame.rect.Rect(
+                    (TILE_SIZE*col)+board_position[0], 
+                    (TILE_SIZE*row)+board_position[1], 
+                    TILE_SIZE, 
+                    TILE_SIZE
+                )
+            )
         
     #draw selection tile
     for cursor in cursors:
@@ -147,14 +175,40 @@ while playing: #no need to do playing==True; playing literally just is true
 
         if selection:
             #make it half transparent for good looks, haha!!    
-            selection_surface=utils.make_transparent_rect((TILE_SIZE,)*2, (0,255,0), 128)
+            #selection_surface=utils.make_transparent_rect((TILE_SIZE,)*2, (0,255,0), 128)
+            #surface.blit(selection_surface, ((selection._location[0] * TILE_SIZE) + board_position[0], (selection._location[1] * TILE_SIZE) + board_position[1]))
 
-            screen.blit(selection_surface, (selection._location[0] * TILE_SIZE, selection._location[1] * TILE_SIZE))
+            #make it the top-most piece, so it doesnt appear behind any others!
+            pieces.append(pieces.pop(pieces.index(selection)))
+
+            #make it follow your mouse!
+            selection_rect=selection._sprite.get_rect(topleft=selection._position)
+
+            selection._position=[
+                cursor._position[0] - (selection_rect.w / 2),
+                cursor._position[1] - (selection_rect.h / 2),
+            ]
+    
+    #draw hover tile
+    for cursor in cursors:
+        if cursor._selection: continue
+
+        cursor_location=((cursor._position[0]-board_position[0]) // TILE_SIZE, (cursor._position[1]-board_position[1]) // TILE_SIZE)
+
+        cursor._hover=utils.get_piece_at(pieces, cursor_location)
+        if cursor._hover:
+            if cursor._white != cursor._hover._white:
+                cursor._hover=None
+
+            else:
+                #make it half transparent for good looks, haha!!    
+                #hover_surface=utils.make_transparent_rect((TILE_SIZE,)*2, (0,255,0), 64)
+                #surface.blit(hover_surface, ((cursor._hover._location[0] * TILE_SIZE) + board_position[0], (cursor._hover._location[1] * TILE_SIZE) + board_position[1]))
+        
+                cursor._hover._lerp_position[1]-=1
 
     #draw pieces based off of their own positions
     for piece in pieces:
-        #logic moved to pieces
-        piece.draw(screen)
 
         for cursor in cursors:
             if piece == cursor._selection: #make this a variable of the piece class, right now only pawn has it.
@@ -162,30 +216,34 @@ while playing: #no need to do playing==True; playing literally just is true
                 
                 for place in valid_move_places:
                     pygame.draw.circle(
-                        screen, 
+                        surface, 
                         (0, 0, 0), 
                         (
-                            (place[0] * TILE_SIZE) + (TILE_SIZE / 2), 
-                            (place[1] * TILE_SIZE) + (TILE_SIZE / 2)
+                            (place[0] * TILE_SIZE) + (TILE_SIZE / 2) + board_position[0], 
+                            (place[1] * TILE_SIZE) + (TILE_SIZE / 2) + board_position[1]
                         ),
                         6
                     )
                     
                 for place in valid_kill_places:
                     pygame.draw.circle(
-                        screen, 
+                        surface, 
                         (0, 0, 0), 
                         (
-                            (place[0] * TILE_SIZE) + (TILE_SIZE / 2), 
-                            (place[1] * TILE_SIZE) + (TILE_SIZE / 2)
+                            (place[0] * TILE_SIZE) + (TILE_SIZE / 2) + board_position[0], 
+                            (place[1] * TILE_SIZE) + (TILE_SIZE / 2) + board_position[1]
                         ), 
                         TILE_SIZE / 2, 
                         4
                     )
+
+        #logic moved to pieces
+        piece.draw(surface)
             
     for cursor in cursors:
-        cursor.update()
-        cursor.draw(screen)
+        cursor.draw(surface)
+
+    screen.blit(pygame.transform.scale_by(surface, utils.SCREEN_ZOOM),(0,0))
                 
     #updates the screen
     pygame.display.update()
