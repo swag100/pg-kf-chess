@@ -40,41 +40,56 @@ class Cursor:
         return final_sprite
 
     def handle_event(self, pieces, event, board_position=(0,0)):
-        if event.type == pygame.JOYAXISMOTION:
-            if self._joy == event.joy:
-                axis_x, axis_y = (self._joystick.get_axis(0), self._joystick.get_axis(1))
+        if self._joystick:
+            if event.type == pygame.JOYAXISMOTION:
+                if self._joy == event.joy:
+                    axis_x, axis_y = (self._joystick.get_axis(0), self._joystick.get_axis(1))
 
-                if abs(axis_x) > self._threshold:
-                    self._speed[0] = self._sensitivity * axis_x
-                else:
-                    self._speed[0]=0
-                if abs(axis_y) > self._threshold:
-                    self._speed[1] = self._sensitivity * axis_y
-                else:
-                    self._speed[1]=0
+                    if abs(axis_x) > self._threshold:
+                        self._speed[0] = self._sensitivity * axis_x
+                    else:
+                        self._speed[0]=0
+                    if abs(axis_y) > self._threshold:
+                        self._speed[1] = self._sensitivity * axis_y
+                    else:
+                        self._speed[1]=0
+        else:
+            if event.type == pygame.MOUSEMOTION:
+                self._position=[x // utils.SCREEN_ZOOM for x in event.pos]
 
-        if event.type in [pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
-            if self._joy == event.joy:
-                #the TILE coordinates that you're clicking on.
-                #tricky to explain, just ask me about it if you don't understand
-                #// is INTEGER division
-                cursor_location=(int((self._position[0] - board_position[0]) // utils.TILE_SIZE), int((self._position[1] - board_position[1]) // utils.TILE_SIZE))
+        if event.type in [pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP, pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP]:
+            if self._joystick:
+                if self._joy != event.joy: return
 
-                if event.type == pygame.JOYBUTTONDOWN:
-                    self._sprite = self.assemble_sprite(self._sprites["grab"])
+            #the TILE coordinates that you're clicking on.
+            #tricky to explain, just ask me about it if you don't understand
+            #// is INTEGER division
+            cursor_location=(
+                int((self._position[0] - board_position[0]) // utils.TILE_SIZE), 
+                int((self._position[1] - board_position[1]) // utils.TILE_SIZE)
+            )
 
-                    self._selection=utils.get_piece_at(pieces, cursor_location)
+            if event.type in [pygame.JOYBUTTONDOWN, pygame.MOUSEBUTTONDOWN]:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 3:
+                        self._white=not self._white
 
-                    if self._selection and self._white != self._selection._white:
-                        self._selection=None
+                        return
 
-                else:
-                    self._sprite = self.assemble_sprite(self._sprites["idle"])
+                self._sprite = self.assemble_sprite(self._sprites["grab"])
 
-                    if self._selection:
-                        self._selection.move_to(pieces, cursor_location)
+                self._selection=utils.get_piece_at(pieces, cursor_location)
 
+                if self._selection and self._white != self._selection._white:
                     self._selection=None
+
+            else:
+                self._sprite = self.assemble_sprite(self._sprites["idle"])
+
+                if self._selection:
+                    self._selection.move_to(pieces, cursor_location)
+
+                self._selection=None
 
     def update(self):
         self._position[0] += self._speed[0]

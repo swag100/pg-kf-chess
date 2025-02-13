@@ -111,6 +111,9 @@ def cursor_setup():
     for cursor in cursors:
         if cursor._joystick not in joysticks:
             cursors.remove(cursor)
+    
+    if len(joysticks) <= 0:
+        cursors.append(Cursor(0,None))
 
 cursor_setup()
 
@@ -180,7 +183,7 @@ while playing: #no need to do playing==True; playing literally just is true
             #surface.blit(selection_surface, ((selection._location[0] * TILE_SIZE) + board_position[0], (selection._location[1] * TILE_SIZE) + board_position[1]))
 
             #make it the top-most piece, so it doesnt appear behind any others!
-            pieces.append(pieces.pop(pieces.index(selection)))
+            y_sorted_pieces.append(y_sorted_pieces.pop(y_sorted_pieces.index(selection)))
 
             #make it follow your mouse!
             selection_rect=selection._sprite.get_rect(topleft=selection._position)
