@@ -26,13 +26,10 @@ pygame.mouse.set_visible(False)
 #variable to control game loop
 playing=True
 
-#list that contains every piece object
-pieces=[]
-
 #winner: who won the game?
 winner=None
 
-def board_setup():
+def board_setup(pieces):
     #create both rows of pawns with loops
     for color in range(2):
         for col in range(8):
@@ -96,7 +93,10 @@ def board_setup():
         pieces.append(king)
         pieces.append(queen)
 
-board_setup()
+    return pieces
+
+#list that contains every piece object
+pieces = board_setup([])
 
 def cursor_setup():
     joysticks=utils.get_joysticks()
