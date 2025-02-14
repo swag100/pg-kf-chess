@@ -1,4 +1,4 @@
-#PARSER.PY
+#SPRITESHEET.PY
 
 import pygame
 import utils

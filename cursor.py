@@ -1,3 +1,5 @@
+#CURSOR.PY
+
 #objects for player cursors
 
 import pygame
