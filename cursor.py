@@ -2,7 +2,7 @@
 
 import pygame
 import utils
-from parser import Parser
+from spritesheet import Parser
 
 class Cursor:
     def __init__(self, joy, joystick):

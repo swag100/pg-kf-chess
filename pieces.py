@@ -4,7 +4,7 @@ import pygame
 import utils
 
 #get access to the sprites
-from parser import Parser
+from spritesheet import Parser
 
 class Piece:
     def __init__(self, location, sprite, white = False):
