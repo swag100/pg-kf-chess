@@ -11,7 +11,7 @@ class Cursor:
         self._white=bool(joy % 2)
 
         self._sensitivity=3
-        self._threshold=0.1
+        self._threshold=0.2
 
         self._position=[x // 2 for x in utils.SCREEN_SIZE]
         self._position[1] += utils.TILE_SIZE * ((self._white * 2) - 1) - (utils.TILE_SIZE / 2)

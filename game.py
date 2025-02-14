@@ -2,7 +2,7 @@
 
 import sys
 import pygame
-from utils import TILE_SIZE, TILE_COUNT, COLORS, BOARD_POSITION
+from utils import TILE_SIZE, COLORS, BOARD_POSITION
 
 #import all piece classes
 from pieces import *

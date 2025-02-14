@@ -229,10 +229,10 @@ class Bishop(Piece):
         Piece.__init__(self, location, 'bishop', white)
 
         self._places_to_move={
-            (-1, -1): 7, #direction: amount
-            (1, -1): 7,
-            (-1, 1): 7,
-            (1, 1): 7
+            (-1, -1): utils.PIECE_MAX_MOVE, #direction: amount
+            (1, -1): utils.PIECE_MAX_MOVE,
+            (-1, 1): utils.PIECE_MAX_MOVE,
+            (1, 1): utils.PIECE_MAX_MOVE
         }
 
         self._places_to_kill=self._places_to_move
@@ -242,10 +242,10 @@ class Rook(Piece):
         Piece.__init__(self, location, 'rook', white)
 
         self._places_to_move={
-            (0, -1): 7, #direction: amount
-            (0, 1): 7,
-            (-1, 0): 7,
-            (1, 0): 7
+            (0, -1): utils.PIECE_MAX_MOVE, #direction: amount
+            (0, 1): utils.PIECE_MAX_MOVE,
+            (-1, 0): utils.PIECE_MAX_MOVE,
+            (1, 0): utils.PIECE_MAX_MOVE
         }
 
         self._places_to_kill=self._places_to_move
@@ -272,14 +272,14 @@ class Queen(Piece):
         Piece.__init__(self, location, 'queen', white)
 
         self._places_to_move={
-            (-1, -1): 7, #direction: amount
-            (1, -1): 7,
-            (-1, 1): 7,
-            (1, 1): 7,
-            (0, -1): 7, #direction: amount
-            (0, 1): 7,
-            (-1, 0): 7,
-            (1, 0): 7
+            (-1, -1): utils.PIECE_MAX_MOVE, #direction: amount
+            (1, -1): utils.PIECE_MAX_MOVE,
+            (-1, 1): utils.PIECE_MAX_MOVE,
+            (1, 1): utils.PIECE_MAX_MOVE,
+            (0, -1): utils.PIECE_MAX_MOVE, #direction: amount
+            (0, 1): utils.PIECE_MAX_MOVE,
+            (-1, 0): utils.PIECE_MAX_MOVE,
+            (1, 0): utils.PIECE_MAX_MOVE
         }
 
         self._places_to_kill=self._places_to_move
