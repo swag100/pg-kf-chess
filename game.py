@@ -137,7 +137,7 @@ while playing: #no need to do playing==True; playing literally just is true
             playing=False
 
         for cursor in cursors:
-            cursor.handle_event(pieces, event, BOARD_POSITION)
+            cursor.handle_event(pieces, event)
 
     #UPDATE THINGS
     
@@ -165,20 +165,22 @@ while playing: #no need to do playing==True; playing literally just is true
             y_sorted_pieces.append(y_sorted_pieces.pop(y_sorted_pieces.index(selection)))
 
             #make it follow your mouse!
-            selection_rect=selection._sprite.get_rect(topleft=selection._position)
+            #save offset of when you first grab the piece.
 
             selection._position=[
-                cursor._position[0] - (selection_rect.w / 2) - (selection._offset[0]),
-                cursor._position[1] - (selection_rect.h / 2) + (selection._offset[1] / 2),
+                cursor._position[0] - cursor._piece_offset[0],
+                cursor._position[1] - cursor._piece_offset[1]
             ]
     
     #draw hover tile
     for cursor in cursors:
         if cursor._selection: continue
 
-        cursor_location=((cursor._position[0]-BOARD_POSITION[0]) // TILE_SIZE, (cursor._position[1]-BOARD_POSITION[1]) // TILE_SIZE)
-
-        cursor._hover=utils.get_piece_at(pieces, cursor_location)
+        collided_piece=None
+        for piece in y_sorted_pieces:
+            if piece._hitbox.collidepoint(*cursor._position):
+                collided_piece=piece
+        cursor._hover=collided_piece
 
         if cursor._hover and cursor._hover._cool_down_time_elapsed <= cursor._hover._cool_down_time:
             cursor._hover=None

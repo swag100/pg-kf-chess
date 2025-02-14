@@ -26,9 +26,13 @@ class Piece:
         self._lerp_position=self._position
 
         #sprite
-        self._sprites = Parser("images/pieces.png",(16,32)).get_sprites(utils.PIECES)
-        self._piece_sprite = self.assemble_sprite(self._sprites[sprite])
+        self._parser=Parser("images/pieces.png",(16,32))
+        self._sprites = self._parser.get_sprites(utils.PIECES)
+        self._piece_sprite = self._parser.assemble_sprite(self._sprites[sprite],self._white)
         self._sprite=self._piece_sprite
+
+        #where the cursor can detect the piece is
+        self._hitbox=self.get_hitbox()
 
         #count of moves. really just for the pawn
         self._moves=0
@@ -36,23 +40,14 @@ class Piece:
         #WOOOO KUNG FU CHESS!
         self._cool_down_time=5
         self._cool_down_time_elapsed=5
+
+    def get_hitbox(self):
+        hitbox=self._sprite.get_bounding_rect()
         
-    def assemble_sprite(self, sprite_colors):
-        final_sprite=pygame.surface.Surface(sprite_colors[0].get_size(), pygame.SRCALPHA)
+        hitbox.x+=self._lerp_position[0]
+        hitbox.y+=self._lerp_position[1]
 
-        #find correct color
-        fill_colors=[
-            utils.COLORS[4],
-            utils.COLORS[int(not self._white)],
-            utils.COLORS[int(not self._white)+2],
-        ]
-
-        for i in range(len(sprite_colors)):
-            surface=sprite_colors[i]
-            utils.fill(surface, fill_colors[i])
-            final_sprite.blit(surface, (0,0))
-
-        return final_sprite
+        return hitbox
         
     def mask_sprite(self, cur_sprite, mask_amount):
         final_sprite=cur_sprite.copy()
@@ -139,6 +134,9 @@ class Piece:
 
         self._lerp_position[0] += (self._position[0] - self._lerp_position[0]) * 0.25
         self._lerp_position[1] += (self._position[1] - self._lerp_position[1]) * 0.25
+
+        #where the cursor can detect the piece is
+        self._hitbox=self.get_hitbox()
 
         self._position = [
             (self._location[0] * utils.TILE_SIZE) + board_position[0] + self._offset[0],

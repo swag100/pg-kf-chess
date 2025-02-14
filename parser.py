@@ -1,6 +1,7 @@
 #PARSER.PY
 
 import pygame
+import utils
 
 class Parser:
     def __init__(self, spritesheet_path, sprite_size):
@@ -24,3 +25,20 @@ class Parser:
                 sprites[sprite_names[col]].append(surface)
 
         return sprites
+        
+    def assemble_sprite(self, sprite_colors, white):
+        final_sprite=pygame.surface.Surface(sprite_colors[0].get_size(), pygame.SRCALPHA)
+
+        #find correct color
+        fill_colors=[
+            utils.COLORS[4],
+            utils.COLORS[int(not white)],
+            utils.COLORS[int(not white)+2],
+        ]
+
+        for i in range(len(sprite_colors)):
+            surface=sprite_colors[i]
+            utils.fill(surface, fill_colors[i])
+            final_sprite.blit(surface, (0,0))
+
+        return final_sprite

@@ -13,7 +13,7 @@ SCREEN_SIZE=(192,192)
 SCREEN_ZOOM=4
 
 #where we draw the entire board and pieces
-BOARD_POSITION=(31,31)
+BOARD_POSITION=(32,32)
 
 PIECES=['pawn', 'knight', 'bishop', 'rook', 'king', 'queen']
 
@@ -26,6 +26,12 @@ COLORS=[
     (45, 30, 34), #outline color
     (83, 149, 170), #background color
 ]
+
+def position_to_location(position, offset=(0,0)):
+    return (
+        (position[0] - offset[0]) // TILE_SIZE,
+        (position[1] - offset[1]) // TILE_SIZE
+    )
 
 def get_piece_at(pieces, location):
     for piece in pieces:
