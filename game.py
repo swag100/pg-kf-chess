@@ -1,7 +1,5 @@
 #GAME.PY
 
-#https://spheya.artstation.com/projects/QnaVO3 assets used for chess images.
-
 import sys
 import pygame
 from utils import TILE_SIZE, TILE_COUNT, COLORS, BOARD_POSITION
@@ -218,9 +216,10 @@ while playing: #no need to do playing==True; playing literally just is true
                             (place[1] * TILE_SIZE) + (TILE_SIZE / 2) + BOARD_POSITION[1]
                         ), 
                         TILE_SIZE / 2, 
-                        2
+                        #2
                     )
 
+    for piece in y_sorted_pieces:
         #logic moved to pieces
         piece.draw(surface)
             
@@ -250,7 +249,7 @@ while not playing: #this will last until you close the window
 
         if event.type in [pygame.JOYDEVICEADDED, pygame.JOYDEVICEREMOVED]:
             cursor_setup()
-
+    
     #DRAW!!
 
     #fill background

@@ -38,6 +38,28 @@ class Cursor:
             final_sprite.blit(surface, (0,0))
 
         return final_sprite
+    
+    def grab(self, pieces, cursor_location):
+
+        self._sprite = self.assemble_sprite(self._sprites["grab"])
+
+        self._selection=utils.get_piece_at(pieces, cursor_location)
+
+        if self._selection:
+            if self._white != self._selection._white:
+                self._selection=None
+                
+        if self._selection:
+            if self._selection._cool_down_time_elapsed <= self._selection._cool_down_time:
+                self._selection=None
+
+    def let_go(self, pieces, cursor_location):
+        self._sprite = self.assemble_sprite(self._sprites["idle"])
+
+        if self._selection:
+            self._selection.move_to(pieces, cursor_location)
+
+        self._selection=None
 
     def handle_event(self, pieces, event, board_position=(0,0)):
         if self._joystick:
@@ -53,6 +75,19 @@ class Cursor:
                         self._speed[1] = self._sensitivity * axis_y
                     else:
                         self._speed[1]=0
+                
+                    if event.axis in [pygame.CONTROLLER_AXIS_TRIGGERLEFT, pygame.CONTROLLER_AXIS_TRIGGERRIGHT]:
+                        cursor_location=(
+                            int((self._position[0] - board_position[0]) // utils.TILE_SIZE), 
+                            int((self._position[1] - board_position[1]) // utils.TILE_SIZE)
+                        )
+
+                        if event.value > self._threshold:
+                            if not self._selection:
+                                self.grab(pieces, cursor_location)
+                        else:
+                            self.let_go(pieces, cursor_location)
+
         else:
             if event.type == pygame.MOUSEMOTION:
                 self._position=[x // utils.SCREEN_ZOOM for x in event.pos]
@@ -76,26 +111,10 @@ class Cursor:
                         self._white=not self._white
 
                         return
-
-                self._sprite = self.assemble_sprite(self._sprites["grab"])
-
-                self._selection=utils.get_piece_at(pieces, cursor_location)
-
-                if self._selection:
-                    if self._white != self._selection._white:
-                        self._selection=None
-                        
-                if self._selection:
-                    if self._selection._cool_down_time_elapsed <= self._selection._cool_down_time:
-                        self._selection=None
-
+                
+                self.grab(pieces, cursor_location)
             else:
-                self._sprite = self.assemble_sprite(self._sprites["idle"])
-
-                if self._selection:
-                    self._selection.move_to(pieces, cursor_location)
-
-                self._selection=None
+                self.let_go(pieces, cursor_location)
 
     def update(self):
         self._position[0] += self._speed[0]
