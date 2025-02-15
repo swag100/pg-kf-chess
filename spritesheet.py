@@ -26,8 +26,8 @@ class Parser:
 
         return sprites
         
-    def assemble_sprite(self, sprite_colors, white):
-        final_sprite=pygame.surface.Surface(sprite_colors[0].get_size(), pygame.SRCALPHA)
+    def assemble_sprite(self, sprite_layers, white):
+        final_sprite=pygame.surface.Surface(sprite_layers[0].get_size(), pygame.SRCALPHA)
 
         #find correct color
         fill_colors=[
@@ -36,8 +36,8 @@ class Parser:
             utils.COLORS[int(not white)+2],
         ]
 
-        for i in range(len(sprite_colors)):
-            surface=sprite_colors[i]
+        for i in range(len(sprite_layers)):
+            surface=sprite_layers[i]
             utils.fill(surface, fill_colors[i])
             final_sprite.blit(surface, (0,0))
 
