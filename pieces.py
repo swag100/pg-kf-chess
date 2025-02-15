@@ -18,7 +18,7 @@ class Piece:
         self._places_to_kill=self._places_to_move
 
         #visual instance variables
-        self._offset=(0,-20)
+        self._offset=[0, -20]
         self._position = [
             (self._location[0] * utils.TILE_SIZE) + utils.BOARD_POSITION[0] + self._offset[0],
             (self._location[1] * utils.TILE_SIZE) + utils.BOARD_POSITION[1] + self._offset[1],
@@ -44,8 +44,8 @@ class Piece:
     def get_hitbox(self):
         hitbox=self._sprite.get_bounding_rect()
         
-        hitbox.x+=self._lerp_position[0]
-        hitbox.y+=self._lerp_position[1]
+        hitbox.x+=self._position[0]
+        hitbox.y+=self._position[1]
 
         return hitbox
         
@@ -130,6 +130,7 @@ class Piece:
         return move_places, kill_places
     
     def update(self, board_position=(0,0)):
+
         self._cool_down_time_elapsed+=(1/utils.FRAME_RATE)
 
         self._lerp_position[0] += (self._position[0] - self._lerp_position[0]) * 0.25
@@ -149,7 +150,7 @@ class Piece:
         else:
             self._sprite = self._piece_sprite
 
-        screen.blit(self._sprite, self._lerp_position)
+        screen.blit(self._sprite, [round(x) for x in self._lerp_position])
 
 class Pawn(Piece):
     def __init__(self, location, white = False):

@@ -177,9 +177,11 @@ while playing: #no need to do playing==True; playing literally just is true
         if cursor._selection: continue
 
         collided_piece=None
+
         for piece in y_sorted_pieces:
             if piece._hitbox.collidepoint(*cursor._position):
                 collided_piece=piece
+
         cursor._hover=collided_piece
 
         if cursor._hover and cursor._hover._cool_down_time_elapsed <= cursor._hover._cool_down_time:
@@ -189,7 +191,7 @@ while playing: #no need to do playing==True; playing literally just is true
             cursor._hover=None
 
         if cursor._hover:
-            cursor._hover._lerp_position[1]-=1
+            cursor._hover._position[1]-=4
 
     #draw pieces based off of their own positions, but sorted!
     for piece in y_sorted_pieces:

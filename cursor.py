@@ -25,20 +25,26 @@ class Cursor:
 
         #visual instance variables!
         self._parser=Parser("images/cursor.png",(16,16))
-        self._sprites = self._parser.get_sprites(["idle", "grab"])
-        self._sprite = self._parser.assemble_sprite(self._sprites["idle"],self._white)
         self._piece_offset=(0,0)
+
+        self._sprites = self._parser.get_sprites(["idle", "grab"])
+        self._sprite_name = "idle"
+
+        self.update_sprite()
+    
+    def update_sprite(self):
+        self._sprite = self._parser.assemble_sprite(self._sprites[self._sprite_name],self._white)
     
     def grab(self):
-
-        self._sprite = self._parser.assemble_sprite(self._sprites["grab"],self._white)
+        self._sprite_name = "grab"
+        self.update_sprite()
 
         self._selection=self._hover
 
         if self._selection:
             self._piece_offset=(
-                self._position[0] - self._hover._hitbox.x - self._selection._offset[0],
-                self._position[1] - self._hover._hitbox.y - (self._selection._offset[1] / 2)
+                self._position[0] - self._hover._position[0],
+                self._position[1] - self._hover._position[1]
             )
 
         if self._selection:
@@ -50,7 +56,8 @@ class Cursor:
                 self._selection=None
 
     def let_go(self, pieces):
-        self._sprite = self._parser.assemble_sprite(self._sprites["idle"],self._white)
+        self._sprite_name = "idle"
+        self.update_sprite()
 
         if self._selection:
             #find the tile that the bottom of the sprite is at
@@ -98,6 +105,7 @@ class Cursor:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 3:
                         self._white=not self._white
+                        self.update_sprite()
 
                         return
                 
