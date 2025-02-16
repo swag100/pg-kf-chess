@@ -95,8 +95,13 @@ class Piece:
                     y=self._location[1]
 
                     if y > 6 or y < 1:
-                        pieces.append(Queen(self._location, self._white))
+                        promoted_piece=Queen(self._location, self._white)
+                        promoted_piece._cool_down_time_elapsed=0
+
+                        pieces.append(promoted_piece)
                         pieces.remove(self)
+
+
                 
                 if isinstance(piece, King):
                     #post won event
