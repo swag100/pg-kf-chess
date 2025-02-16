@@ -1,7 +1,7 @@
 #SPRITESHEET.PY
 
 import pygame
-import utils
+from utils import *
 
 class Parser:
     def __init__(self, spritesheet_path, sprite_size):
@@ -31,14 +31,14 @@ class Parser:
 
         #find correct color
         fill_colors=[
-            utils.COLORS[4],
-            utils.COLORS[int(not white)],
-            utils.COLORS[int(not white)+2],
+            get_color(OUTLINE),
+            get_color(int(not white)),
+            get_color(int(not white)+2),
         ]
 
         for i in range(len(sprite_layers)):
             surface=sprite_layers[i]
-            utils.fill(surface, fill_colors[i])
+            fill(surface, fill_colors[i])
             final_sprite.blit(surface, (0,0))
 
         return final_sprite

@@ -2,7 +2,7 @@
 
 import sys
 import pygame
-from utils import TILE_SIZE, COLORS, BOARD_POSITION
+from utils import *
 
 #import all piece classes
 from pieces import *
@@ -12,14 +12,14 @@ from cursor import Cursor
 pygame.init()
 
 #https://www.pygame.org/docs/ref/joystick.html
-joysticks=utils.get_joysticks()
+joysticks=get_joysticks()
 
 cursors=[]
 
 #creates a screen with given dimensions and sets caption
-surface = pygame.surface.Surface(utils.SCREEN_SIZE)
+surface = pygame.surface.Surface(SCREEN_SIZE)
 
-screen = pygame.display.set_mode(tuple(axis * utils.SCREEN_ZOOM for axis in utils.SCREEN_SIZE))
+screen = pygame.display.set_mode(tuple(axis * SCREEN_ZOOM for axis in SCREEN_SIZE))
 pygame.display.set_caption("Chess")
 pygame.mouse.set_visible(False)
 
@@ -99,7 +99,7 @@ def board_setup(pieces):
 pieces = board_setup([])
 
 def cursor_setup():
-    joysticks=utils.get_joysticks()
+    joysticks=get_joysticks()
     
     for joystick in joysticks:
         already_has_cursor=False
@@ -149,9 +149,9 @@ while playing: #no need to do playing==True; playing literally just is true
     #DRAW!!
 
     #fill background
-    surface.fill(COLORS[5])
+    surface.fill(get_color(5))
 
-    utils.draw_board(surface)
+    draw_board(surface)
 
     #sort by location y
     y_sorted_pieces = sorted(pieces, key=lambda x: x._location[1])
@@ -191,7 +191,7 @@ while playing: #no need to do playing==True; playing literally just is true
             cursor._hover=None
 
         if cursor._hover:
-            cursor._hover._position[1]-=4
+            cursor._hover._lerp_position[1]-=PIECE_HOVER_RAISE * PIECE_DRAG
 
     #draw pieces based off of their own positions, but sorted!
     for piece in y_sorted_pieces:
@@ -203,7 +203,7 @@ while playing: #no need to do playing==True; playing literally just is true
                 for place in valid_move_places:
                     pygame.draw.circle(
                         surface, 
-                        COLORS[4], 
+                        get_color(OUTLINE), 
                         (
                             (place[0] * TILE_SIZE) + (TILE_SIZE / 2) + BOARD_POSITION[0], 
                             (place[1] * TILE_SIZE) + (TILE_SIZE / 2) + BOARD_POSITION[1]
@@ -214,7 +214,7 @@ while playing: #no need to do playing==True; playing literally just is true
                 for place in valid_kill_places:
                     pygame.draw.circle(
                         surface, 
-                        COLORS[4], 
+                        get_color(OUTLINE), 
                         (
                             (place[0] * TILE_SIZE) + (TILE_SIZE / 2) + BOARD_POSITION[0], 
                             (place[1] * TILE_SIZE) + (TILE_SIZE / 2) + BOARD_POSITION[1]
@@ -230,17 +230,17 @@ while playing: #no need to do playing==True; playing literally just is true
     for cursor in cursors:
         cursor.draw(surface)
 
-    screen.blit(pygame.transform.scale_by(surface, utils.SCREEN_ZOOM),(0,0))
+    screen.blit(pygame.transform.scale_by(surface, SCREEN_ZOOM),(0,0))
                 
     #updates the screen
     pygame.display.update()
 
     #sets constant frame rate
-    pygame.time.Clock().tick(utils.FRAME_RATE)
+    pygame.time.Clock().tick(FRAME_RATE)
 
 #create winner text surface, along with outlines
 my_font = pygame.font.Font('fonts/PixelOperator8-Bold.ttf', 8)
-text_surface = my_font.render(utils.get_white_string(winner).title() + ' won!', False, utils.COLORS[4])
+text_surface = my_font.render(get_white_string(winner).title() + ' won!', False, get_color(not winner))
 
 while not playing: #this will last until you close the window
     for event in pygame.event.get():
@@ -257,14 +257,14 @@ while not playing: #this will last until you close the window
     #DRAW!!
 
     #fill background
-    surface.fill(COLORS[5])
+    surface.fill(get_color(winner))
 
-    surface.blit(text_surface, text_surface.get_rect(center=[x // 2 for x in utils.SCREEN_SIZE]))
+    surface.blit(text_surface, text_surface.get_rect(center=[x // 2 for x in SCREEN_SIZE]))
 
-    screen.blit(pygame.transform.scale_by(surface, utils.SCREEN_ZOOM),(0,0))
+    screen.blit(pygame.transform.scale_by(surface, SCREEN_ZOOM),(0,0))
                 
     #updates the screen
     pygame.display.update()
 
     #sets constant frame rate
-    pygame.time.Clock().tick(utils.FRAME_RATE)
+    pygame.time.Clock().tick(FRAME_RATE)

@@ -13,23 +13,41 @@ TILE_COUNT=8
 PIECE_MAX_MOVE = TILE_COUNT - 1
 
 #screen size variables
-SCREEN_SIZE=(192,192)
+SCREEN_SIZE=((TILE_COUNT + 4)*TILE_SIZE,)*2
 SCREEN_ZOOM=4
 
 #where we draw the entire board and pieces
-BOARD_POSITION=(32,32)
+BOARD_POSITION=(TILE_SIZE*2,)*2
 
+#piece constants
 PIECES=['pawn', 'knight', 'bishop', 'rook', 'king', 'queen']
+PIECE_DRAG=0.3
+PIECE_HOVER_RAISE=4
 
 #color list
-COLORS=[
-    (217, 216, 157), #white
-    (130, 76, 76), #black
-    (227, 128, 74), #DARK white
-    (77, 51, 59), #DARK black
-    (45, 30, 34), #outline color
-    (83, 149, 170), #background color
-]
+COLORS={
+    'default': [
+        (217, 216, 157), #white
+        (130, 76, 76), #black
+        (227, 128, 74), #DARK white
+        (77, 51, 59), #DARK black
+        (45, 30, 34), #outline color
+        (83, 149, 170) #background color
+    ],
+    'light': [
+        (255, 255, 255),
+        (127, 159, 184),
+        (204, 205, 210),
+        (105, 127, 150),
+        (58, 63, 82),
+        (255, 255, 255)
+    ]
+}
+
+OUTLINE=4
+BACKGROUND=5
+
+PALETTE='default'
 
 def position_to_location(position, offset=(0,0)):
     return (
@@ -65,7 +83,7 @@ def draw_board(surface):
     #draw board outline
     pygame.draw.rect(
         surface, 
-        COLORS[4], 
+        get_color(4), 
         pygame.rect.Rect(
             BOARD_POSITION[0]-1, 
             BOARD_POSITION[1]-1, 
@@ -79,7 +97,7 @@ def draw_board(surface):
         for col in range(TILE_COUNT):
             pygame.draw.rect(
                 surface, 
-                COLORS[(col+row)%2], 
+                get_color((col+row)%2), 
                 pygame.rect.Rect(
                     (TILE_SIZE*col)+BOARD_POSITION[0], 
                     (TILE_SIZE*row)+BOARD_POSITION[1], 
@@ -90,3 +108,6 @@ def draw_board(surface):
 
 def get_white_string(white):
     return 'white' if white else 'black'
+
+def get_color(color_id):
+    return COLORS[PALETTE][color_id]

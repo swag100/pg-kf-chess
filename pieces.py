@@ -1,7 +1,7 @@
 #PIECES.PY
 
 import pygame
-import utils
+from utils import *
 
 #get access to the sprites
 from spritesheet import Parser
@@ -18,34 +18,37 @@ class Piece:
         self._places_to_kill=self._places_to_move
 
         #visual instance variables
-        self._offset=[0, -20]
+        self._offset=[0, -12]
         self._position = [
-            (self._location[0] * utils.TILE_SIZE) + utils.BOARD_POSITION[0] + self._offset[0],
-            (self._location[1] * utils.TILE_SIZE) + utils.BOARD_POSITION[1] + self._offset[1],
+            (self._location[0] * TILE_SIZE) + BOARD_POSITION[0] + self._offset[0],
+            (self._location[1] * TILE_SIZE) + BOARD_POSITION[1] + self._offset[1],
         ]
         self._lerp_position=self._position
 
         #sprite
-        self._parser=Parser("images/pieces.png",(16,32))
-        self._sprites = self._parser.get_sprites(utils.PIECES)
+        self._parser=Parser("images/pieces.png",(16,24))
+        self._sprites = self._parser.get_sprites(PIECES)
         self._piece_sprite = self._parser.assemble_sprite(self._sprites[sprite],self._white)
         self._sprite=self._piece_sprite
-
-        #where the cursor can detect the piece is
-        self._hitbox=self.get_hitbox()
 
         #count of moves. really just for the pawn
         self._moves=0
 
         #WOOOO KUNG FU CHESS!
         self._cool_down_time=5
-        self._cool_down_time_elapsed=5
+        self._cool_down_time_elapsed=self._cool_down_time
+
+        #where the cursor can detect the piece is
+        self._hitbox=self.get_hitbox()
 
     def get_hitbox(self):
         hitbox=self._sprite.get_bounding_rect()
         
+        on_cool_down=self._cool_down_time_elapsed<self._cool_down_time
+
+        if not on_cool_down: hitbox.h+=PIECE_HOVER_RAISE
         hitbox.x+=self._position[0]
-        hitbox.y+=self._position[1]
+        hitbox.y+=self._position[1]-(PIECE_HOVER_RAISE if not on_cool_down else 0)
 
         return hitbox
         
@@ -62,7 +65,7 @@ class Piece:
 
         mask_sprite=pygame.surface.Surface(mask_sprite_size, pygame.SRCALPHA)
         mask_sprite.blit(final_sprite, sprite_rect)
-        utils.fill(mask_sprite, utils.COLORS[4])
+        fill(mask_sprite, get_color(OUTLINE))
 
         final_sprite.blit(mask_sprite, (0, 0))
 
@@ -73,7 +76,7 @@ class Piece:
 
         for place in move_tiles + kill_tiles:
             if place == new_location:
-                piece=utils.get_piece_at(pieces, place)
+                piece=get_piece_at(pieces, place)
 
                 if place in kill_tiles:
                     pieces.remove(piece)
@@ -112,7 +115,7 @@ class Piece:
                         self._location[1] + (offset[1]*((self._white*2)-1) * (i + 1))
                     )
 
-                    new_piece=utils.get_piece_at(pieces, new_place)
+                    new_piece=get_piece_at(pieces, new_place)
                     if new_piece:
                         if new_piece._white != self._white:
                             kill_places.append(new_place)
@@ -121,7 +124,7 @@ class Piece:
                     else:
                         out_of_bounds=False
                         for axis in new_place:
-                            if not 0 <= axis < utils.TILE_COUNT:
+                            if not 0 <= axis < TILE_COUNT:
                                 out_of_bounds=True
 
                         if not out_of_bounds:
@@ -130,21 +133,22 @@ class Piece:
         return move_places, kill_places
     
     def update(self, board_position=(0,0)):
+        self._cool_down_time_elapsed+=(1/FRAME_RATE)
 
-        self._cool_down_time_elapsed+=(1/utils.FRAME_RATE)
-
-        self._lerp_position[0] += (self._position[0] - self._lerp_position[0]) * 0.25
-        self._lerp_position[1] += (self._position[1] - self._lerp_position[1]) * 0.25
+        self._lerp_position[0] += (self._position[0] - self._lerp_position[0]) * PIECE_DRAG
+        self._lerp_position[1] += (self._position[1] - self._lerp_position[1]) * PIECE_DRAG
 
         #where the cursor can detect the piece is
         self._hitbox=self.get_hitbox()
 
         self._position = [
-            (self._location[0] * utils.TILE_SIZE) + board_position[0] + self._offset[0],
-            (self._location[1] * utils.TILE_SIZE) + board_position[1] + self._offset[1],
+            (self._location[0] * TILE_SIZE) + board_position[0] + self._offset[0],
+            (self._location[1] * TILE_SIZE) + board_position[1] + self._offset[1],
         ]
 
     def draw(self, screen):
+        #pygame.draw.rect(screen, (255,0,0), self._hitbox)
+
         if self._cool_down_time_elapsed < self._cool_down_time:
             self._sprite = self.mask_sprite(self._piece_sprite, self._cool_down_time_elapsed / self._cool_down_time)
         else:
@@ -177,7 +181,7 @@ class Pawn(Piece):
                 self._location[1] + (offset[1])*((self._white*2)-1)
             )
             
-            piece=utils.get_piece_at(pieces, new_place)
+            piece=get_piece_at(pieces, new_place)
             if piece and piece._white != self._white:
                 kill_places.append(new_place)
 
@@ -210,14 +214,14 @@ class Knight(Piece):
                 self._location[1] + (offset[1])*((self._white*2)-1)
             )
 
-            piece=utils.get_piece_at(pieces, new_place)
+            piece=get_piece_at(pieces, new_place)
             if piece:
                 if piece._white != self._white:
                     kill_places.append(new_place)
             else:
                 out_of_bounds=False
                 for axis in new_place:
-                    if not 0 <= axis < utils.TILE_COUNT:
+                    if not 0 <= axis < TILE_COUNT:
                         out_of_bounds=True
 
                 if not out_of_bounds:
@@ -230,10 +234,10 @@ class Bishop(Piece):
         Piece.__init__(self, location, 'bishop', white)
 
         self._places_to_move={
-            (-1, -1): utils.PIECE_MAX_MOVE, #direction: amount
-            (1, -1): utils.PIECE_MAX_MOVE,
-            (-1, 1): utils.PIECE_MAX_MOVE,
-            (1, 1): utils.PIECE_MAX_MOVE
+            (-1, -1): PIECE_MAX_MOVE, #direction: amount
+            (1, -1): PIECE_MAX_MOVE,
+            (-1, 1): PIECE_MAX_MOVE,
+            (1, 1): PIECE_MAX_MOVE
         }
 
         self._places_to_kill=self._places_to_move
@@ -243,10 +247,10 @@ class Rook(Piece):
         Piece.__init__(self, location, 'rook', white)
 
         self._places_to_move={
-            (0, -1): utils.PIECE_MAX_MOVE, #direction: amount
-            (0, 1): utils.PIECE_MAX_MOVE,
-            (-1, 0): utils.PIECE_MAX_MOVE,
-            (1, 0): utils.PIECE_MAX_MOVE
+            (0, -1): PIECE_MAX_MOVE, #direction: amount
+            (0, 1): PIECE_MAX_MOVE,
+            (-1, 0): PIECE_MAX_MOVE,
+            (1, 0): PIECE_MAX_MOVE
         }
 
         self._places_to_kill=self._places_to_move
@@ -273,14 +277,14 @@ class Queen(Piece):
         Piece.__init__(self, location, 'queen', white)
 
         self._places_to_move={
-            (-1, -1): utils.PIECE_MAX_MOVE, #direction: amount
-            (1, -1): utils.PIECE_MAX_MOVE,
-            (-1, 1): utils.PIECE_MAX_MOVE,
-            (1, 1): utils.PIECE_MAX_MOVE,
-            (0, -1): utils.PIECE_MAX_MOVE, #direction: amount
-            (0, 1): utils.PIECE_MAX_MOVE,
-            (-1, 0): utils.PIECE_MAX_MOVE,
-            (1, 0): utils.PIECE_MAX_MOVE
+            (-1, -1): PIECE_MAX_MOVE, #direction: amount
+            (1, -1): PIECE_MAX_MOVE,
+            (-1, 1): PIECE_MAX_MOVE,
+            (1, 1): PIECE_MAX_MOVE,
+            (0, -1): PIECE_MAX_MOVE, #direction: amount
+            (0, 1): PIECE_MAX_MOVE,
+            (-1, 0): PIECE_MAX_MOVE,
+            (1, 0): PIECE_MAX_MOVE
         }
 
         self._places_to_kill=self._places_to_move

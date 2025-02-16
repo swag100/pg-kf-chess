@@ -26,6 +26,7 @@ class Cursor:
         #visual instance variables!
         self._parser=Parser("images/cursor.png",(16,16))
         self._piece_offset=(0,0)
+        self._sprite_offset=(7,1)
 
         self._sprites = self._parser.get_sprites(["idle", "grab"])
         self._sprite_name = "idle"
@@ -44,7 +45,7 @@ class Cursor:
         if self._selection:
             self._piece_offset=(
                 self._position[0] - self._hover._position[0],
-                self._position[1] - self._hover._position[1]
+                self._position[1] - self._hover._position[1] + 1
             )
 
         if self._selection:
@@ -60,10 +61,11 @@ class Cursor:
         self.update_sprite()
 
         if self._selection:
-            #find the tile that the bottom of the sprite is at
+            #use the sprite's real position
             midbottom=list(self._selection._hitbox.midbottom)
-            midbottom[1]-=4
+            midbottom[1]-=utils.PIECE_HOVER_RAISE
 
+            #find the tile that the bottom of the sprite is at
             bottom_of_sprite_location=utils.position_to_location(midbottom, utils.BOARD_POSITION)
 
             self._selection.move_to(pieces, bottom_of_sprite_location)
@@ -128,5 +130,10 @@ class Cursor:
 
     def draw(self, screen):
         #pygame.draw.circle(screen, (255,0,0) if self._white else (0,255,0), self._position, 4)
+        
+        position=(
+            self._position[0] - self._sprite_offset[0], 
+            self._position[1] - self._sprite_offset[1]
+        )
 
-        screen.blit(self._sprite, (self._position[0] - 7, self._position[1] - 1))
+        screen.blit(self._sprite, position)
